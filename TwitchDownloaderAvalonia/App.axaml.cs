@@ -24,7 +24,7 @@ namespace TwitchDownloaderAvalonia
             {
                 var settings = new SettingsService();
                 LocalizationService.Current.SetCulture(settings.Current.GuiCulture);
-                ThemeService.Apply(settings.Current.GuiTheme);
+                var themeStartup = ThemeService.Initialize(settings);
                 var status = new AppStatus(settings);
                 var ffmpeg = new FfmpegService();
                 var files = new FileDialogService();
@@ -40,7 +40,7 @@ namespace TwitchDownloaderAvalonia
                 void OnOpened(object? sender, EventArgs e)
                 {
                     mainWindow.Opened -= OnOpened;
-                    _ = vm.InitializeAsync();
+                    _ = InitializeMainWindowAsync(vm, dialogs, themeStartup);
                 }
 
                 mainWindow.Opened += OnOpened;
@@ -50,6 +50,38 @@ namespace TwitchDownloaderAvalonia
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private static async Task InitializeMainWindowAsync(
+            MainWindowViewModel vm,
+            DialogService dialogs,
+            ThemeStartupResult themeStartup)
+        {
+            try
+            {
+                await ShowThemeStartupDialogsAsync(dialogs, themeStartup);
+                await vm.InitializeAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[app] startup initialize failed: {ex}");
+            }
+        }
+
+        private static async Task ShowThemeStartupDialogsAsync(DialogService dialogs, ThemeStartupResult themeStartup)
+        {
+            if (themeStartup.MissingPackFileName is { } fileName)
+            {
+                await dialogs.ShowMessageAsync(
+                    Loc.Get("settings.theme_not_found"),
+                    Loc.Get("settings.theme_not_found_message", fileName));
+            }
+
+            if (themeStartup.ThemesWriteFailed)
+            {
+                var message = Loc.Get("settings.themes_failed_to_write");
+                await dialogs.ShowMessageAsync(message, message);
+            }
         }
     }
 }

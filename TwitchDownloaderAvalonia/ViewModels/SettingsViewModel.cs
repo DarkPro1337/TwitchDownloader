@@ -7,6 +7,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private readonly FileDialogService _files;
         private readonly DialogService _dialogs;
         private readonly FileCollisionService _collision;
+        private static readonly StringComparer ThemeNames = StringComparer.OrdinalIgnoreCase;
         private bool _suppressSave;
 
         public SettingsViewModel(
@@ -30,7 +31,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public IReadOnlyList<CultureOption> Cultures => AvailableCultures.All;
         public string TempPathPlaceholder { get; } = Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-        public IReadOnlyList<LabeledOption> ThemeOptions { get; private set; } = [];
+        public IReadOnlyList<ThemePickerItem> ThemePickerItems { get; private set; } = [];
         public IReadOnlyList<LabeledOption> CollisionOptions { get; private set; } = [];
         public IReadOnlyList<LabeledOption> QualityOptions { get; private set; } = [];
         public IReadOnlyList<FilenameParameter> FilenameParameters { get; private set; } = [];
@@ -39,7 +40,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial CultureOption SelectedCulture { get; set; } = AvailableCultures.English;
 
         [ObservableProperty]
-        public partial LabeledOption? SelectedThemeOption { get; set; }
+        public partial ThemePickerItem? SelectedThemePickerItem { get; set; }
 
         [ObservableProperty]
         public partial LabeledOption? SelectedCollisionOption { get; set; }
@@ -110,13 +111,15 @@ namespace TwitchDownloaderAvalonia.ViewModels
         protected override void OnCultureChanged(object? sender, EventArgs e)
         {
             _suppressSave = true;
-            var theme = SelectedThemeOption?.Value;
             var collision = SelectedCollisionOption?.Value;
             var quality = SelectedQualityOption?.Value;
+
             RebuildLocalizedOptions();
-            SelectedThemeOption = FindOption(ThemeOptions, theme, ThemeService.System);
+
+            SelectedThemePickerItem = FindPickerItemFromSettings();
             SelectedCollisionOption = FindOption(CollisionOptions, collision, "Ask");
             SelectedQualityOption = FindOption(QualityOptions, quality, EnqueueOptionsViewModel.Qualities[0]);
+
             _suppressSave = false;
         }
 
@@ -126,7 +129,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             var current = _settings.Current;
             RebuildLocalizedOptions();
             SelectedCulture = AvailableCultures.FromCode(current.GuiCulture);
-            SelectedThemeOption = FindOption(ThemeOptions, current.GuiTheme, ThemeService.System);
+            SelectedThemePickerItem = FindPickerItemFromSettings();
             HideDonation = current.HideDonation;
             ReduceMotion = current.ReduceMotion;
             UtcVideoTime = current.UtcVideoTime;
@@ -157,12 +160,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         private void RebuildLocalizedOptions()
         {
-            ThemeOptions =
-            [
-                new LabeledOption(ThemeService.System, Loc.Get("settings.theme_system")),
-                new LabeledOption(ThemeService.Light, Loc.Get("settings.theme_light")),
-                new LabeledOption(ThemeService.Dark, Loc.Get("settings.theme_dark")),
-            ];
+            ThemePickerItems = BuildThemePickerItems();
             CollisionOptions =
             [
                 new LabeledOption("Ask", Loc.Get("settings.collision_ask")),
@@ -170,6 +168,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 new LabeledOption("Rename", Loc.Get("settings.collision_rename")),
                 new LabeledOption("Cancel", Loc.Get("settings.collision_cancel")),
             ];
+
             QualityOptions = [.. EnqueueOptionsViewModel.Qualities.Select(value => new LabeledOption(value, QualityLabels.Get(value)))];
             FilenameParameters =
             [
@@ -193,16 +192,80 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 new FilenameParameter("{views}", "settings.param_views"),
                 new FilenameParameter("{game}", "settings.param_game"),
             ];
-            OnPropertyChanged(nameof(ThemeOptions));
+
+            OnPropertyChanged(nameof(ThemePickerItems));
             OnPropertyChanged(nameof(CollisionOptions));
             OnPropertyChanged(nameof(QualityOptions));
             OnPropertyChanged(nameof(FilenameParameters));
         }
 
-        private static LabeledOption FindOption(IReadOnlyList<LabeledOption> options, string? value, string fallback)
+        public void RefreshThemeOptions()
         {
-            return options.FirstOrDefault(option => option.Value == value)
-                ?? options.FirstOrDefault(option => option.Value == fallback)
+            _suppressSave = true;
+            RebuildLocalizedOptions();
+            SelectedThemePickerItem = FindPickerItemFromSettings();
+            _suppressSave = false;
+        }
+
+        private List<ThemePickerItem> BuildThemePickerItems()
+        {
+            var current = _settings.Current;
+            var items = new List<ThemePickerItem>
+            {
+                new(ThemeService.SYSTEM, Loc.Get("settings.theme_system"), IsSystem: true),
+                new(string.Empty, Loc.Get("settings.theme_light_themes"), IsHeader: true),
+            };
+
+            foreach (var name in ThemeService.GetLightThemeOptions())
+            {
+                items.Add(new ThemePickerItem(name, ThemeNames.Equals(name, ThemeService.LIGHT)
+                        ? Loc.Get("settings.theme_light_default")
+                        : name,
+                    IsPreferred: ThemeNames.Equals(name, current.GuiLightTheme)));
+            }
+
+            items.Add(new ThemePickerItem(string.Empty, Loc.Get("settings.theme_dark_themes"), IsHeader: true));
+            foreach (var name in ThemeService.GetDarkThemeOptions())
+            {
+                items.Add(new ThemePickerItem(name, ThemeNames.Equals(name, ThemeService.DARK)
+                        ? Loc.Get("settings.theme_dark_default")
+                        : name,
+                    IsDark: true,
+                    IsPreferred: ThemeNames.Equals(name, current.GuiDarkTheme)));
+            }
+
+            return items;
+        }
+
+        private ThemePickerItem FindPickerItemFromSettings()
+        {
+            var current = _settings.Current;
+            if (ThemePickerItems.Count == 0 || ThemeNames.Equals(current.GuiTheme, ThemeService.SYSTEM))
+                return ThemePickerItems.FirstOrDefault(static item => item.IsSystem) ?? ThemePickerItems[0];
+
+            var isDark = ThemeNames.Equals(current.GuiTheme, ThemeService.DARK);
+            var preferred = isDark
+                ? current.GuiDarkTheme
+                : current.GuiLightTheme;
+
+            var builtin = isDark
+                ? ThemeService.DARK
+                : ThemeService.LIGHT;
+
+            return FindNamedPack(isDark, preferred) ?? FindNamedPack(isDark, builtin) ?? ThemePickerItems[0];
+        }
+
+        private ThemePickerItem? FindNamedPack(bool isDark, string name) =>
+            ThemePickerItems.FirstOrDefault(item => item.IsSelectable && item.IsDark == isDark && item.HasName(name));
+
+        private static LabeledOption FindOption(
+            IReadOnlyList<LabeledOption> options,
+            string? value,
+            string fallback,
+            StringComparison comparison = StringComparison.Ordinal)
+        {
+            return options.FirstOrDefault(option => option.Value.Equals(value, comparison))
+                ?? options.FirstOrDefault(option => option.Value.Equals(fallback, comparison))
                 ?? options[0];
         }
 
@@ -254,7 +317,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _collision.ResetSessionBehavior();
             LoadFromSettings();
             LocalizationService.Current.SetCulture(SelectedCulture.Code);
-            ThemeService.Apply(SelectedThemeOption?.Value ?? ThemeService.System);
+            ThemeService.Apply(_settings.Current);
             _status.ReduceMotion = ReduceMotion;
             Queue.NotifyLimitsChanged();
         }
@@ -272,14 +335,42 @@ namespace TwitchDownloaderAvalonia.ViewModels
             LocalizationService.Current.SetCulture(value.Code);
         }
 
-        partial void OnSelectedThemeOptionChanged(LabeledOption? value)
+        partial void OnSelectedThemePickerItemChanged(ThemePickerItem? value)
         {
             if (_suppressSave || value is null)
                 return;
 
-            _settings.Current.GuiTheme = value.Value;
+            if (value.IsHeader)
+            {
+                _suppressSave = true;
+                SelectedThemePickerItem = FindPickerItemFromSettings();
+                _suppressSave = false;
+                return;
+            }
+
+            if (value.IsSystem)
+            {
+                _settings.Current.GuiTheme = ThemeService.SYSTEM;
+            }
+            else if (value.IsDark)
+            {
+                _settings.Current.GuiTheme = ThemeService.DARK;
+                _settings.Current.GuiDarkTheme = value.Value;
+            }
+            else
+            {
+                _settings.Current.GuiTheme = ThemeService.LIGHT;
+                _settings.Current.GuiLightTheme = value.Value;
+            }
+
             _settings.Save();
-            ThemeService.Apply(value.Value);
+            ThemeService.Apply(_settings.Current);
+
+            _suppressSave = true;
+            ThemePickerItems = BuildThemePickerItems();
+            OnPropertyChanged(nameof(ThemePickerItems));
+            SelectedThemePickerItem = FindPickerItemFromSettings();
+            _suppressSave = false;
         }
 
         partial void OnSelectedCollisionOptionChanged(LabeledOption? value)

@@ -18,6 +18,7 @@
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="Lang\**" />
     <EmbeddedResource Include="..\LICENSE.txt" LogicalName="TwitchDownloaderAvalonia.LICENSE.txt" />
+    <EmbeddedResource Include="Themes\README.txt" LogicalName="TwitchDownloaderAvalonia.Themes.README.txt" />
   </ItemGroup>
 
   <ItemGroup>

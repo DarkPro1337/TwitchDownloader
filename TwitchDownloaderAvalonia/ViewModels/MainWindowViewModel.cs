@@ -143,6 +143,9 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 _ => Vod,
             };
 
+            if (value == AppPage.Settings)
+                SettingsPage.RefreshThemeOptions();
+
             if (value == AppPage.About)
                 _ = About.EnsureUpdateCheckAsync();
         }

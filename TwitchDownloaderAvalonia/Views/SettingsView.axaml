@@ -24,8 +24,67 @@
                         <TextBlock Classes="label" Text="{loc:Translate Key=settings.theme}" Margin="0" />
                         <ComboBox
                             HorizontalAlignment="Stretch"
-                            ItemsSource="{Binding ThemeOptions}"
-                            SelectedItem="{Binding SelectedThemeOption}" />
+                            ItemsSource="{Binding ThemePickerItems}"
+                            SelectedItem="{Binding SelectedThemePickerItem}"
+                            ItemContainerTheme="{StaticResource ThemePickerComboBoxItem}"
+                            AutomationProperties.Name="{loc:Translate Key=settings.theme}">
+                            <ComboBox.Styles>
+                                <Style Selector="ComboBoxItem" x:DataType="models:ThemePickerItem">
+                                    <Setter Property="Focusable" Value="{Binding IsHeader, Converter={x:Static c:InverseBoolConverter.Instance}}" />
+                                    <Setter Property="IsHitTestVisible" Value="{Binding IsHeader, Converter={x:Static c:InverseBoolConverter.Instance}}" />
+                                </Style>
+                                <Style Selector="ComboBoxItem PathIcon">
+                                    <Setter Property="Width" Value="12" />
+                                    <Setter Property="Height" Value="12" />
+                                    <Setter Property="Opacity" Value="0.7" />
+                                </Style>
+                            </ComboBox.Styles>
+                            <ComboBox.SelectionBoxItemTemplate>
+                                <DataTemplate x:DataType="models:ThemePickerItem">
+                                    <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </ComboBox.SelectionBoxItemTemplate>
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:ThemePickerItem">
+                                    <Panel>
+                                        <Grid
+                                            ColumnDefinitions="*,Auto"
+                                            IsVisible="{Binding IsHeader}"
+                                            Margin="0,4,0,1">
+                                            <Rectangle
+                                                Height="1"
+                                                Margin="0,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Fill="{DynamicResource BorderBrush}"
+                                                Opacity="0.65" />
+                                            <TextBlock
+                                                Grid.Column="1"
+                                                Classes="muted"
+                                                FontSize="11"
+                                                LineHeight="14"
+                                                Text="{Binding Label}"
+                                                VerticalAlignment="Center" />
+                                        </Grid>
+                                        <Grid
+                                            ColumnDefinitions="*,Auto"
+                                            IsVisible="{Binding IsHeader, Converter={x:Static c:InverseBoolConverter.Instance}}"
+                                            MinHeight="32">
+                                            <TextBlock
+                                                Text="{Binding Label}"
+                                                TextTrimming="CharacterEllipsis"
+                                                VerticalAlignment="Center" />
+                                            <PathIcon
+                                                Grid.Column="1"
+                                                Margin="8,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Data="{StaticResource IconCheck}"
+                                                Foreground="{Binding $parent[ComboBoxItem].Foreground}"
+                                                IsVisible="{Binding IsPreferred}" />
+                                        </Grid>
+                                    </Panel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Spacing="6">

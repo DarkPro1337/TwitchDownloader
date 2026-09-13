@@ -31,6 +31,8 @@ namespace TwitchDownloaderAvalonia.Models
         public bool ReduceMotion { get; set; }
         public bool HideDonation { get; set; }
         public string GuiTheme { get; set; } = "System";
+        public string GuiLightTheme { get; set; } = "Light";
+        public string GuiDarkTheme { get; set; } = "Dark";
         public string GuiCulture { get; set; } = "en-US";
         public List<string> RecentChannels { get; set; } = [];
 
