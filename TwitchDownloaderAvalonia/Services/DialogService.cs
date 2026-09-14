@@ -53,12 +53,37 @@ namespace TwitchDownloaderAvalonia.Services
             if (_owner is null)
                 return new CollisionPromptResult(CollisionChoice.Cancel, false);
 
-            if (Dispatcher.UIThread.CheckAccess())
-                throw new InvalidOperationException("File collision prompts cannot block the UI thread. Call from a background thread.");
+            EnsureBackgroundThread("File collision prompts");
 
             return Dispatcher.UIThread.InvokeAsync(() => ShowCollisionCoreAsync(fileName, fullPath))
                 .GetAwaiter()
                 .GetResult();
+        }
+
+        /// <summary>
+        /// Shows a modal picker for abandoned VOD cache folders and returns the directories the user chose to delete.
+        /// </summary>
+        /// <remarks>
+        /// Core download APIs expose a synchronous cache-cleaner callback, while Avalonia dialogs are async.
+        /// Call this from a background thread (the VOD download path uses <c>Task.Run</c>).
+        /// Invoking it on the UI thread would deadlock on <c>GetResult</c>.
+        /// </remarks>
+        public DirectoryInfo[] PromptAbandonedVideoCaches(DirectoryInfo[] directories)
+        {
+            if (_owner is null || directories.Length == 0)
+                return [];
+
+            EnsureBackgroundThread("Abandoned video cache prompts");
+
+            return Dispatcher.UIThread.InvokeAsync(() => ShowAbandonedVideoCachesCoreAsync(directories))
+                .GetAwaiter()
+                .GetResult();
+        }
+
+        internal static void EnsureBackgroundThread(string operation)
+        {
+            if (Dispatcher.UIThread.CheckAccess())
+                throw new InvalidOperationException($"{operation} cannot block the UI thread. Call from a background thread.");
         }
 
         private async Task ShowMessageCoreAsync(string title, string message)
@@ -135,6 +160,23 @@ namespace TwitchDownloaderAvalonia.Services
             return;
 
             void OnDialogClosing(object? sender, WindowClosingEventArgs e) => viewModel.NotifyClosed();
+        }
+
+        private async Task<DirectoryInfo[]> ShowAbandonedVideoCachesCoreAsync(DirectoryInfo[] directories)
+        {
+            var dialog = new AbandonedVideoCacheDialog();
+            var viewModel = new AbandonedVideoCacheViewModel(directories, result => dialog.Close(result), this);
+            dialog.DataContext = viewModel;
+            viewModel.StartSizeCalculation();
+            try
+            {
+                var result = await dialog.ShowDialog<DirectoryInfo[]?>(_owner!);
+                return result ?? [];
+            }
+            finally
+            {
+                viewModel.Dispose();
+            }
         }
     }
 

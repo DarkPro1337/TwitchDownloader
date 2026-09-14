@@ -5,7 +5,8 @@ namespace TwitchDownloaderAvalonia.Services
         DialogService dialogs,
         QueueService queue,
         FfmpegService ffmpeg,
-        FileCollisionService collision)
+        FileCollisionService collision,
+        AbandonedVideoCacheService cacheCleaner)
     {
         public async Task<bool> EnqueueAsync(IReadOnlyList<QueueableMedia> items)
         {
@@ -37,6 +38,7 @@ namespace TwitchDownloaderAvalonia.Services
                 Settings = settings.Current,
                 FfmpegPath = ffmpeg.ResolvedPath,
                 CollisionCallback = file => collision.HandleCollision(file)!,
+                CacheCleanerCallback = cacheCleaner.Handle,
                 LogLevel = queue.LogLevel,
             });
 

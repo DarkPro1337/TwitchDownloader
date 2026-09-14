@@ -7,6 +7,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private readonly DialogService _dialogs;
         private readonly FileDialogService _fileDialogs;
         private readonly FileCollisionService _collision;
+        private readonly AbandonedVideoCacheService _cacheCleaner;
         private readonly ThumbnailService _thumbnails;
         private readonly QueueService _queue;
 
@@ -30,6 +31,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             DialogService dialogs,
             FileDialogService fileDialogs,
             FileCollisionService collision,
+            AbandonedVideoCacheService cacheCleaner,
             ThumbnailService thumbnails,
             QueueService queue)
         {
@@ -39,6 +41,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _dialogs = dialogs;
             _fileDialogs = fileDialogs;
             _collision = collision;
+            _cacheCleaner = cacheCleaner;
             _thumbnails = thumbnails;
             _queue = queue;
             _suppressSave = true;
@@ -281,7 +284,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 if (directories.Length > 0)
                     AppendLog(Loc.Get("vod.unmanaged_caches", directories.Length));
 
-                return [];
+                return _cacheCleaner.Handle(directories);
             };
             options.FileCollisionCallback = file => _collision.HandleCollision(file);
 

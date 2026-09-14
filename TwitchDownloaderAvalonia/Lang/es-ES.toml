@@ -49,6 +49,8 @@ unknown_user = "Usuario desconocido"
 unknown_game = "Juego desconocido"
 unknown = "Desconocido"
 log_error_prefix = "ERROR: "
+accept = "Aceptar"
+select_all = "Seleccionar todo"
 
 [status]
 idle = "Sin actividad"
@@ -78,7 +80,7 @@ deleted = "VOD no válido; ¿quizá se eliminó o caducó?"
 insufficient_access = "Acceso insuficiente. El VOD puede ser solo para suscriptores; prueba a indicar un token OAuth en Ajustes."
 get_info_failed = "No se puede obtener información de vídeo. Asegúrese de que el enlace/ID es correcto e inténtelo de nuevo."
 invalid_trim = "Entradas de recorte no válidas"
-unmanaged_caches = "Se encontraron {0} cachés de vídeo no administradas; puedes borrarlas más tarde en la carpeta de caché."
+unmanaged_caches = "Se encontraron {0} cachés de vídeo no administradas."
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "Seleccione las cachés que desea eliminar"
+delete = "Borrar"
+path = "Ruta"
+age = "Edad"
+size = "Tamaño"
+age_days = "{0:N0} días"
+total_size = "Tamaño total:"
+open_folder = "Abrir carpeta"
+copy_path = "Copiar ruta al portapapeles"
 
 [dialogs]
 ok = "Aceptar"

@@ -49,6 +49,8 @@ unknown_user = "Unknown User"
 unknown_game = "Unknown Game"
 unknown = "Bilinmeyen"
 log_error_prefix = "HATA: "
+accept = "Kabul et"
+select_all = "Hepsini Seç"
 
 [status]
 idle = "Boşta"
@@ -78,7 +80,7 @@ deleted = "Geçersiz VOD; silinmiş veya süresi dolmuş olabilir."
 insufficient_access = "Yetersiz erişim. VOD yalnızca abonelere açık olabilir; Ayarlar'da bir OAuth jetonu deneyin."
 get_info_failed = "Video bilgileri alınamıyor. Lütfen Bağlantının/Kimliğin doğru olduğundan emin olun ve tekrar deneyin."
 invalid_trim = "Geçersiz Kırpma Girişleri"
-unmanaged_caches = "{0} yönetilmeyen video önbelleği bulundu; daha sonra önbellek klasöründen silinebilir."
+unmanaged_caches = "{0} yönetilmeyen video önbelleği bulundu."
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "Silinecek önbellekleri seç"
+delete = "Sil"
+path = "Yol"
+age = "Yaş"
+size = "Boyut"
+age_days = "{0:N0} gün"
+total_size = "Toplam boyut:"
+open_folder = "Klasörü aç"
+copy_path = "Yolu panoya kopyala"
 
 [dialogs]
 ok = "Kabul et"

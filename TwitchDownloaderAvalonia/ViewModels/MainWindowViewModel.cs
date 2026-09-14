@@ -11,6 +11,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             DialogService dialogs,
             FileDialogService fileDialogs,
             FileCollisionService collision,
+            AbandonedVideoCacheService cacheCleaner,
             ThumbnailService thumbnails,
             QueueService queue,
             UpdateCheckService updates)
@@ -18,8 +19,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _ffmpeg = ffmpeg;
             Status = status;
 
-            var enqueue = new QueueEnqueueService(settings, dialogs, queue, ffmpeg, collision);
-            Vod = new VodDownloadViewModel(settings, status, ffmpeg, dialogs, fileDialogs, collision, thumbnails, queue);
+            var enqueue = new QueueEnqueueService(settings, dialogs, queue, ffmpeg, collision, cacheCleaner);
+            Vod = new VodDownloadViewModel(settings, status, ffmpeg, dialogs, fileDialogs, collision, cacheCleaner, thumbnails, queue);
             Clip = new ClipDownloadViewModel(settings, status, ffmpeg, dialogs, fileDialogs, collision, thumbnails, queue);
             ChatDownload = new ChatDownloadViewModel(settings, status, dialogs, fileDialogs, collision, thumbnails, queue);
             ChatUpdate = new ChatUpdateViewModel(settings, status, dialogs, fileDialogs, collision, thumbnails, queue);

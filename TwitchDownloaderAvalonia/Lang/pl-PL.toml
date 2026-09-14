@@ -49,6 +49,8 @@ unknown_user = "Unknown User"
 unknown_game = "Unknown Game"
 unknown = "Nieznany"
 log_error_prefix = "BŁĄD: "
+accept = "Akceptuj"
+select_all = "Wybierz Wszystko"
 
 [status]
 idle = "Oczekiwanie"
@@ -78,7 +80,7 @@ deleted = "Nieprawidłowy VOD — być może usunięty lub wygasły?"
 insufficient_access = "Niewystarczający dostęp. VOD może być dostępny tylko dla subskrybentów; spróbuj podać token OAuth w ustawieniach."
 get_info_failed = "Nie można uzyskać informacji o wideo. Sprawdź ponownie czy Link/ID jest poprawny i spróbuj ponownie."
 invalid_trim = "Nieprawidłowe Dane Ucięcia"
-unmanaged_caches = "Znaleziono {0} niezarządzanych pamięci podręcznych wideo. Możesz je później usunąć z folderu cache."
+unmanaged_caches = "Znaleziono {0} niezarządzanych pamięci podręcznych wideo."
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "Wybierz pamięci podręczne do usunięcia"
+delete = "Usuń"
+path = "Ścieżka"
+age = "Wiek"
+size = "Rozmiar"
+age_days = "{0:N0} dni"
+total_size = "Całkowity rozmiar:"
+open_folder = "Otwórz folder"
+copy_path = "Kopiuj ścieżkę do schowka"
 
 [dialogs]
 ok = "Akceptuj"

@@ -7,6 +7,7 @@ namespace TwitchDownloaderAvalonia.Services
         public required AppSettings Settings { get; init; }
         public required string FfmpegPath { get; init; }
         public required Func<FileInfo, FileInfo> CollisionCallback { get; init; }
+        public required Func<DirectoryInfo[], DirectoryInfo[]> CacheCleanerCallback { get; init; }
         public required LogLevel LogLevel { get; init; }
     }
 
@@ -79,7 +80,7 @@ namespace TwitchDownloaderAvalonia.Services
                             DownloadThreads = Math.Clamp(settings.VodDownloadThreads, 1, 20),
                             ThrottleKib = throttle,
                             FileCollisionCallback = context.CollisionCallback,
-                            CacheCleanerCallback = _ => [],
+                            CacheCleanerCallback = context.CacheCleanerCallback,
                             DelayDownload = options.DelayVideo && item.IsRecording,
                         };
 

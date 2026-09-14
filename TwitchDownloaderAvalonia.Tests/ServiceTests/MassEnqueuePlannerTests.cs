@@ -227,6 +227,28 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             Assert.Empty(jobs);
         }
 
+        [Fact]
+        public void VodJobsUseCacheCleanerCallback()
+        {
+            Func<DirectoryInfo[], DirectoryInfo[]> callback = dirs => dirs;
+            var jobs = MassEnqueuePlanner.Build(Items(Vod("1")), new EnqueueOptions
+            {
+                Folder = Folder,
+                Quality = "Source",
+                DownloadVideo = true,
+            }, new MassEnqueueContext
+            {
+                Settings = new AppSettings(),
+                FfmpegPath = "ffmpeg",
+                CollisionCallback = info => info,
+                CacheCleanerCallback = callback,
+                LogLevel = LogLevel.None,
+            });
+
+            var vod = Assert.IsType<VideoDownloadOptions>(jobs[0].Options);
+            Assert.Same(callback, vod.CacheCleanerCallback);
+        }
+
         private static IReadOnlyList<QueueItemViewModel> Build(
             IReadOnlyList<QueueableMedia> items,
             EnqueueOptions options,
@@ -237,6 +259,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
                 Settings = settings ?? new AppSettings(),
                 FfmpegPath = "ffmpeg",
                 CollisionCallback = info => info,
+                CacheCleanerCallback = dirs => dirs,
                 LogLevel = LogLevel.None,
             });
         }

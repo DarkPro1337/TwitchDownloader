@@ -49,6 +49,8 @@ unknown_user = "未知使用者"
 unknown_game = "未知遊戲"
 unknown = "未知"
 log_error_prefix = "錯誤： "
+accept = "同意"
+select_all = "全部選擇"
 
 [status]
 idle = "空閒"
@@ -78,7 +80,7 @@ deleted = "無效的 VOD，可能已刪除或過期。"
 insufficient_access = "存取權限不足。此 VOD 可能僅限訂閱者，請在設定中提供 OAuth 權杖。"
 get_info_failed = "無法獲取影片資訊。請仔細檢查連結 / ID 並重試。"
 invalid_trim = "裁剪輸入無效"
-unmanaged_caches = "發現 {0} 個未管理的影片快取，稍後可從快取資料夾刪除。"
+unmanaged_caches = "發現 {0} 個未管理的影片快取。"
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "選擇要刪除的快取"
+delete = "刪除"
+path = "路徑"
+age = "年齡"
+size = "大小"
+age_days = "{0:N0} 天"
+total_size = "總大小："
+open_folder = "開啟資料夾"
+copy_path = "複製路徑至剪貼簿"
 
 [dialogs]
 ok = "同意"

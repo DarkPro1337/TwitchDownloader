@@ -49,6 +49,8 @@ unknown_user = "未知用户"
 unknown_game = "未知游戏"
 unknown = "未知"
 log_error_prefix = "错误： "
+accept = "同意"
+select_all = "全部选择"
 
 [status]
 idle = "空闲"
@@ -78,7 +80,7 @@ deleted = "无效的 VOD，可能已删除或过期。"
 insufficient_access = "访问权限不足。该 VOD 可能仅限订阅者，请在设置中提供 OAuth 令牌。"
 get_info_failed = "无法获取视频信息。请仔细检查链接 / ID 并重试。"
 invalid_trim = "裁剪输入无效"
-unmanaged_caches = "发现 {0} 个未管理的视频缓存，稍后可从缓存文件夹中删除。"
+unmanaged_caches = "发现 {0} 个未管理的视频缓存。"
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "选择要删除的缓存"
+delete = "删除"
+path = "路径"
+age = "年龄"
+size = "大小"
+age_days = "{0:N0} 天"
+total_size = "总大小："
+open_folder = "打开文件夹"
+copy_path = "复制路径至剪贴板"
 
 [dialogs]
 ok = "同意"

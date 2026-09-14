@@ -49,6 +49,8 @@ unknown_user = "Неизвестный пользователь"
 unknown_game = "Неизвестная категория"
 unknown = "Неизвестно"
 log_error_prefix = "ОШИБКА: "
+accept = "Принять"
+select_all = "Выбрать всё"
 
 [status]
 idle = "Ожидание"
@@ -78,7 +80,7 @@ deleted = "Недействительный VOD — возможно, удалё
 insufficient_access = "Недостаточно прав. VOD может быть доступен только подписчикам — укажите OAuth-токен в настройках."
 get_info_failed = "Не удалось получить информацию о видео. Пожалуйста, убедитесь что ссылка/ID видео правильные и попробуйте заново."
 invalid_trim = "Неправильные границы обрезки"
-unmanaged_caches = "Найдено неуправляемых видеокэшей: {0}. Их можно позже удалить из папки кэша."
+unmanaged_caches = "Найдено неуправляемых видеокэшей: {0}."
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "Выберите кеш для удаления"
+delete = "Удалить"
+path = "Путь"
+age = "Возраст"
+size = "Размер"
+age_days = "{0:N0} дн."
+total_size = "Итоговый размер:"
+open_folder = "Открыть папку"
+copy_path = "Скопировать путь в буфер обмена"
 
 [dialogs]
 ok = "Принять"

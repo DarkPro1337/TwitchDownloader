@@ -49,6 +49,8 @@ unknown_user = "Unknown User"
 unknown_game = "Unknown Game"
 unknown = "Невідомо"
 log_error_prefix = "ПОМИЛКА: "
+accept = "Прийняти"
+select_all = "Вибрати усі"
 
 [status]
 idle = "Не працює"
@@ -78,7 +80,7 @@ deleted = "Недійсний VOD — можливо, видалений або 
 insufficient_access = "Недостатньо прав доступу. VOD може бути лише для підписників; спробуйте вказати OAuth-токен у налаштуваннях."
 get_info_failed = "Не вдається отримати інформацію про відео. Будь ласка, переконайтеся, що посилання/ID правильні та спробуйте ще раз."
 invalid_trim = "Неправильне вхідне значення"
-unmanaged_caches = "Знайдено {0} некерованих відеокешів; їх можна пізніше видалити з теки кешу."
+unmanaged_caches = "Знайдено {0} некерованих відеокешів."
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "Виберіть кеші для видалення"
+delete = "Видалити"
+path = "Шлях"
+age = "Вік"
+size = "Розмір"
+age_days = "{0:N0} дн."
+total_size = "Загальний розмір:"
+open_folder = "Відкрити теку"
+copy_path = "Копіювати шлях до буфера обміну"
 
 [dialogs]
 ok = "Прийняти"

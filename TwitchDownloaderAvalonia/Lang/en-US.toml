@@ -49,6 +49,8 @@ unknown_user = "Unknown User"
 unknown_game = "Unknown Game"
 unknown = "Unknown"
 log_error_prefix = "ERROR: "
+accept = "Accept"
+select_all = "Select All"
 
 [status]
 idle = "Idle"
@@ -78,7 +80,7 @@ deleted = "Invalid VOD, deleted/expired VOD possibly?"
 insufficient_access = "Insufficient access. The VOD may be subscriber-only; try providing an OAuth token in Settings."
 get_info_failed = "Unable to get video information. Please make sure the Link/ID is correct and try again."
 invalid_trim = "Invalid Trim Inputs"
-unmanaged_caches = "{0} unmanaged video caches were found and can be deleted later from the cache folder."
+unmanaged_caches = "{0} unmanaged video caches were found."
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "Select Caches To Delete"
+delete = "Delete"
+path = "Path"
+age = "Age"
+size = "Size"
+age_days = "{0:N0} days"
+total_size = "Total Size:"
+open_folder = "Open folder"
+copy_path = "Copy path to clipboard"
 
 [dialogs]
 ok = "OK"

@@ -49,6 +49,8 @@ unknown_user = "Unknown User"
 unknown_game = "Unknown Game"
 unknown = "Inconnu"
 log_error_prefix = "ERREUR: "
+accept = "Accepter"
+select_all = "Sélectionnez tout"
 
 [status]
 idle = "Désœuvré"
@@ -78,7 +80,7 @@ deleted = "VOD invalide — peut-être supprimée ou expirée ?"
 insufficient_access = "Accès insuffisant. La VOD est peut-être réservée aux abonnés ; essayez de fournir un jeton OAuth dans les paramètres."
 get_info_failed = "Nous n'avons pas pu obtenir l'information vidéo. Veuillez vérifier votre lien et réessayer."
 invalid_trim = "Temps de début ou de fin invalides"
-unmanaged_caches = "{0} caches vidéo non gérées ont été trouvées et pourront être supprimées plus tard depuis le dossier de cache."
+unmanaged_caches = "{0} caches vidéo non gérées ont été trouvées."
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "Sélectionner les caches à supprimer"
+delete = "Supprimer"
+path = "Chemin"
+age = "Âge"
+size = "Taille"
+age_days = "{0:N0} jours"
+total_size = "Taille totale :"
+open_folder = "Ouvrir le dossier"
+copy_path = "Copier le chemin dans le presse-papiers"
 
 [dialogs]
 ok = "Accepter"

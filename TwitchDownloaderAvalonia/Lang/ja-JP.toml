@@ -49,6 +49,8 @@ unknown_user = "不明なユーザー"
 unknown_game = "不明なゲーム"
 unknown = "不明"
 log_error_prefix = "エラー: "
+accept = "承認"
+select_all = "全て選択"
 
 [status]
 idle = "待機中"
@@ -78,7 +80,7 @@ deleted = "無効な VOD です。削除または期限切れの可能性があ�
 insufficient_access = "アクセス権が不足しています。サブスクライバー限定の VOD の可能性があります。設定で OAuth トークンを指定してください。"
 get_info_failed = "ビデオの情報を取得できません。 リンク/IDを再度確認して再度試してください。"
 invalid_trim = "不正なトリミング入力"
-unmanaged_caches = "{0} 件の未管理ビデオキャッシュが見つかりました。後でキャッシュフォルダーから削除できます。"
+unmanaged_caches = "{0} 件の未管理ビデオキャッシュが見つかりました。"
 live = "LIVE"
 
 [clip]
@@ -414,6 +416,17 @@ debug_ffmpeg = "FFmpeg: {0}"
 runtime_summary = "{0} · {1} · Avalonia {2} · FFmpeg {3}"
 version_debug = "v{0} DEBUG"
 version = "v{0}"
+
+[cache]
+title = "削除するキャッシュを選択"
+delete = "削除"
+path = "パス"
+age = "経過"
+size = "サイズ"
+age_days = "{0:N0} 日"
+total_size = "合計サイズ:"
+open_folder = "フォルダを開く"
+copy_path = "クリップボードにパスをコピー"
 
 [dialogs]
 ok = "OK"
