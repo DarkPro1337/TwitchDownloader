@@ -50,12 +50,13 @@ namespace TwitchDownloaderAvalonia.Services
             }
 
             var current = settings.Current;
-            var prefs = Normalize(current.GuiTheme, current.GuiLightTheme, current.GuiDarkTheme, ScanPackInfos());
+            var ui = current.Ui;
+            var prefs = Normalize(ui.Theme, ui.LightTheme, ui.DarkTheme, ScanPackInfos());
             if (prefs.MissingPackFiles.Count > 0 || prefs.MigratedFromPack)
             {
-                current.GuiTheme = prefs.Mode;
-                current.GuiLightTheme = prefs.LightTheme;
-                current.GuiDarkTheme = prefs.DarkTheme;
+                ui.Theme = prefs.Mode;
+                ui.LightTheme = prefs.LightTheme;
+                ui.DarkTheme = prefs.DarkTheme;
                 settings.Save();
             }
 
@@ -134,7 +135,7 @@ namespace TwitchDownloaderAvalonia.Services
 
         public static void Apply(AppSettings settings)
         {
-            Apply(Normalize(settings.GuiTheme, settings.GuiLightTheme, settings.GuiDarkTheme));
+            Apply(Normalize(settings.Ui.Theme, settings.Ui.LightTheme, settings.Ui.DarkTheme));
         }
 
         public static void Apply(string? mode, string? lightTheme = null, string? darkTheme = null)

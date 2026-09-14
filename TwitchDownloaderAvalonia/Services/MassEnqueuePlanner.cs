@@ -22,7 +22,11 @@ namespace TwitchDownloaderAvalonia.Services
                 return [];
 
             var settings = context.Settings;
-            var throttle = settings.DownloadThrottleEnabled ? settings.MaximumBandwidthKib : -1;
+            var general = settings.General;
+            var vod = settings.Vod;
+            var clip = settings.Clip;
+            var chat = settings.Chat;
+            var throttle = general.DownloadThrottleEnabled ? general.MaximumBandwidthKib : -1;
             var tasks = new List<QueueItemViewModel>(items.Count * 3);
             var renderChat = options is { RenderChat: true, DownloadChat: true, ChatFormat: ChatFormat.Json };
             var chatCompression = options is { ChatFormat: ChatFormat.Json, ChatCompression: ChatCompression.Gzip }
@@ -43,7 +47,7 @@ namespace TwitchDownloaderAvalonia.Services
                             Id = item.Id,
                             Quality = options.Quality,
                             Filename = Path.Combine(options.Folder, FilenameService.GetFilename(
-                                settings.TemplateClip,
+                                general.TemplateClip,
                                 item.Title,
                                 item.Id,
                                 item.Time,
@@ -57,8 +61,8 @@ namespace TwitchDownloaderAvalonia.Services
                                 NullIfEmpty(item.ClipperName),
                                 NullIfEmpty(item.ClipperId)) + ".mp4"),
                             ThrottleKib = throttle,
-                            TempFolder = settings.TempPath,
-                            EncodeMetadata = settings.EncodeClipMetadata,
+                            TempFolder = general.TempPath,
+                            EncodeMetadata = clip.EncodeMetadata,
                             FfmpegPath = context.FfmpegPath,
                             FileCollisionCallback = context.CollisionCallback,
                         };
@@ -70,14 +74,14 @@ namespace TwitchDownloaderAvalonia.Services
                     {
                         var vodOptions = new VideoDownloadOptions
                         {
-                            Oauth = settings.OAuth,
-                            TempFolder = settings.TempPath,
+                            Oauth = general.OAuth,
+                            TempFolder = general.TempPath,
                             Id = videoId,
                             Quality = options.Quality,
                             FfmpegPath = context.FfmpegPath,
                             TrimBeginning = false,
                             TrimEnding = false,
-                            DownloadThreads = Math.Clamp(settings.VodDownloadThreads, 1, 20),
+                            DownloadThreads = Math.Clamp(vod.DownloadThreads, 1, 20),
                             ThrottleKib = throttle,
                             FileCollisionCallback = context.CollisionCallback,
                             CacheCleanerCallback = context.CacheCleanerCallback,
@@ -85,7 +89,7 @@ namespace TwitchDownloaderAvalonia.Services
                         };
 
                         vodOptions.Filename = Path.Combine(options.Folder, FilenameService.GetFilename(
-                            settings.TemplateVod,
+                            general.TemplateVod,
                             item.Title,
                             item.Id,
                             item.Time,
@@ -111,20 +115,20 @@ namespace TwitchDownloaderAvalonia.Services
                     BttvEmotes = options.Bttv,
                     FfzEmotes = options.Ffz,
                     StvEmotes = options.Stv,
-                    TimeFormat = settings.ChatTextTimestampStyle,
+                    TimeFormat = chat.TextTimestampStyle,
                     Id = item.Id,
                     TrimBeginning = false,
                     TrimEnding = false,
                     FileCollisionCallback = context.CollisionCallback,
                     DownloadFormat = options.ChatFormat,
                     Compression = chatCompression,
-                    DownloadThreads = Math.Clamp(settings.ChatDownloadThreads, 1, 20),
-                    TempFolder = settings.TempPath,
+                    DownloadThreads = Math.Clamp(chat.DownloadThreads, 1, 20),
+                    TempFolder = general.TempPath,
                     DelayDownload = item.IsRecording && options.DelayChat,
                 };
 
                 chatOptions.Filename = Path.Combine(options.Folder, FilenameService.GetFilename(
-                    settings.TemplateChat,
+                    general.TemplateChat,
                     item.Title,
                     item.Id,
                     item.Time,

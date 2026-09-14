@@ -33,7 +33,7 @@ namespace TwitchDownloaderAvalonia.Services
             _gate.Wait();
             try
             {
-                var behavior = _sessionBehavior ?? _settings.Current.FileCollisionBehavior;
+                var behavior = _sessionBehavior ?? _settings.Current.General.FileCollisionBehavior;
                 if (behavior is not CollisionBehavior.Prompt)
                     return Apply(fileInfo, behavior);
 

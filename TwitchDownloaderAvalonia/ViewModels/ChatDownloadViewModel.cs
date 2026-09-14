@@ -42,14 +42,14 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _thumbnails = thumbnails;
             _queue = queue;
             _suppressSave = true;
-            DownloadFormat = _settings.Current.ChatDownloadFormat;
-            Compression = _settings.Current.ChatJsonCompression;
-            TimestampStyle = _settings.Current.ChatTextTimestampStyle;
-            EmbedImages = _settings.Current.ChatEmbedEmotes;
-            BttvEmotes = _settings.Current.BttvEmotes;
-            FfzEmotes = _settings.Current.FfzEmotes;
-            StvEmotes = _settings.Current.StvEmotes;
-            DownloadThreads = Math.Clamp(_settings.Current.ChatDownloadThreads, 1, 20);
+            DownloadFormat = _settings.Current.Chat.DownloadFormat;
+            Compression = _settings.Current.Chat.JsonCompression;
+            TimestampStyle = _settings.Current.Chat.TextTimestampStyle;
+            EmbedImages = _settings.Current.Chat.EmbedEmotes;
+            BttvEmotes = _settings.Current.Chat.BttvEmotes;
+            FfzEmotes = _settings.Current.Chat.FfzEmotes;
+            StvEmotes = _settings.Current.Chat.StvEmotes;
+            DownloadThreads = Math.Clamp(_settings.Current.Chat.DownloadThreads, 1, 20);
             _suppressSave = false;
             Status = Loc.Get("status.idle");
         }
@@ -219,7 +219,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             {
                 AppendLog(Loc.Error(ex.Message));
                 await _dialogs.ShowErrorAsync(Loc.Get("chat.get_info_failed"), ex.Message);
-                if (_settings.Current.VerboseErrors)
+                if (_settings.Current.General.VerboseErrors)
                     await _dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
             }
             finally
@@ -267,52 +267,52 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         partial void OnDownloadFormatChanged(ChatFormat value)
         {
-            _settings.Current.ChatDownloadFormat = value;
+            _settings.Current.Chat.DownloadFormat = value;
             SaveSettings();
             UpdateSuggestedFileName();
         }
 
         partial void OnCompressionChanged(ChatCompression value)
         {
-            _settings.Current.ChatJsonCompression = value;
+            _settings.Current.Chat.JsonCompression = value;
             SaveSettings();
             UpdateSuggestedFileName();
         }
 
         partial void OnTimestampStyleChanged(TimestampFormat value)
         {
-            _settings.Current.ChatTextTimestampStyle = value;
+            _settings.Current.Chat.TextTimestampStyle = value;
             SaveSettings();
         }
 
         partial void OnEmbedImagesChanged(bool value)
         {
-            _settings.Current.ChatEmbedEmotes = value;
+            _settings.Current.Chat.EmbedEmotes = value;
             SaveSettings();
             OnPropertyChanged(nameof(CanEditThirdPartyEmotes));
         }
 
         partial void OnBttvEmotesChanged(bool value)
         {
-            _settings.Current.BttvEmotes = value;
+            _settings.Current.Chat.BttvEmotes = value;
             SaveSettings();
         }
 
         partial void OnFfzEmotesChanged(bool value)
         {
-            _settings.Current.FfzEmotes = value;
+            _settings.Current.Chat.FfzEmotes = value;
             SaveSettings();
         }
 
         partial void OnStvEmotesChanged(bool value)
         {
-            _settings.Current.StvEmotes = value;
+            _settings.Current.Chat.StvEmotes = value;
             SaveSettings();
         }
 
         partial void OnDownloadThreadsChanged(int value)
         {
-            _settings.Current.ChatDownloadThreads = Math.Clamp(value, 1, 20);
+            _settings.Current.Chat.DownloadThreads = Math.Clamp(value, 1, 20);
             SaveSettings();
         }
 
@@ -428,7 +428,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             InfoStreamer = streamerName;
             _clipperName = clipperName;
             _clipperId = clipperId;
-            _videoTime = _settings.Current.UtcVideoTime ? createdAt : createdAt.ToLocalTime();
+            _videoTime = _settings.Current.General.UtcVideoTime ? createdAt : createdAt.ToLocalTime();
             InfoCreatedAt = _videoTime.ToString(CultureInfo.CurrentCulture);
             _viewCount = viewCount;
             _game = game;
@@ -453,7 +453,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 Id = _downloadId,
                 Filename = filename,
                 DownloadThreads = DownloadThreads,
-                TempFolder = _settings.Current.TempPath,
+                TempFolder = _settings.Current.General.TempPath,
                 FileCollisionCallback = file => _collision.HandleCollision(file),
             };
         }
@@ -491,7 +491,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private string BuildSuggestedFileName(string extension)
         {
             return FilenameService.GetFilename(
-                _settings.Current.TemplateChat,
+                _settings.Current.General.TemplateChat,
                 _title,
                 _downloadId,
                 _videoTime,

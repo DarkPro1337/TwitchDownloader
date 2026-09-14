@@ -36,13 +36,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _close = close;
             HasVods = hasVods;
             HasRecordingVods = hasRecordingVods;
-            Folder = settings.Current.QueueFolder;
+            Folder = settings.Current.Queue.Folder;
             AvailableQualities = !hasVods
                 ? [.. Qualities.Where(quality => quality != "Audio Only")]
                 : Qualities;
 
             RebuildQualityOptions();
-            var preferred = settings.Current.PreferredQuality;
+            var preferred = settings.Current.Queue.PreferredQuality;
             SelectedQuality = !AvailableQualities.Contains(preferred)
                 ? AvailableQualities[0]
                 : preferred;
@@ -54,12 +54,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
             DownloadVideo = true;
             DownloadChat = false;
             RenderChat = false;
-            ChatFormat = settings.Current.ChatDownloadFormat;
-            ChatCompression = settings.Current.ChatJsonCompression;
-            EmbedImages = settings.Current.ChatEmbedEmotes;
-            Bttv = settings.Current.BttvEmotes;
-            Ffz = settings.Current.FfzEmotes;
-            Stv = settings.Current.StvEmotes;
+
+            ChatFormat = settings.Current.Chat.DownloadFormat;
+            ChatCompression = settings.Current.Chat.JsonCompression;
+            EmbedImages = settings.Current.Chat.EmbedEmotes;
+            Bttv = settings.Current.Chat.BttvEmotes;
+            Ffz = settings.Current.Chat.FfzEmotes;
+            Stv = settings.Current.Chat.StvEmotes;
         }
 
         public bool HasVods { get; }
@@ -162,8 +163,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (!CanAdd)
                 return;
 
-            _settings.Current.QueueFolder = Folder.Trim();
-            _settings.Current.PreferredQuality = SelectedQuality;
+            _settings.Current.Queue.Folder = Folder.Trim();
+            _settings.Current.Queue.PreferredQuality = SelectedQuality;
             _settings.Save();
             _close(new EnqueueOptions
             {

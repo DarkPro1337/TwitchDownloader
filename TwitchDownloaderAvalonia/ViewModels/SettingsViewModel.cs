@@ -127,32 +127,35 @@ namespace TwitchDownloaderAvalonia.ViewModels
         {
             _suppressSave = true;
             var current = _settings.Current;
+            var ui = current.Ui;
+            var general = current.General;
+            var queue = current.Queue;
             RebuildLocalizedOptions();
-            SelectedCulture = AvailableCultures.FromCode(current.GuiCulture);
+            SelectedCulture = AvailableCultures.FromCode(ui.Culture);
             SelectedThemePickerItem = FindPickerItemFromSettings();
-            HideDonation = current.HideDonation;
-            ReduceMotion = current.ReduceMotion;
-            UtcVideoTime = current.UtcVideoTime;
-            OAuth = current.OAuth;
-            TempPath = current.TempPath;
-            DownloadThrottleEnabled = current.DownloadThrottleEnabled;
-            MaximumBandwidthKib = Math.Clamp(current.MaximumBandwidthKib, 1, 122070);
-            SelectedCollision = CollisionToLabel(current.FileCollisionBehavior);
+            HideDonation = ui.HideDonation;
+            ReduceMotion = ui.ReduceMotion;
+            UtcVideoTime = general.UtcVideoTime;
+            OAuth = general.OAuth;
+            TempPath = general.TempPath;
+            DownloadThrottleEnabled = general.DownloadThrottleEnabled;
+            MaximumBandwidthKib = Math.Clamp(general.MaximumBandwidthKib, 1, 122070);
+            SelectedCollision = CollisionToLabel(general.FileCollisionBehavior);
             SelectedCollisionOption = FindOption(CollisionOptions, SelectedCollision, "Ask");
-            VerboseErrors = current.VerboseErrors;
-            var levels = (LogLevel)current.LogLevels;
+            VerboseErrors = general.VerboseErrors;
+            var levels = (LogLevel)ui.LogLevels;
             LogVerbose = levels.HasFlag(LogLevel.Verbose);
             LogInfo = levels.HasFlag(LogLevel.Info);
             LogWarning = levels.HasFlag(LogLevel.Warning);
             LogError = levels.HasFlag(LogLevel.Error);
             LogFfmpeg = levels.HasFlag(LogLevel.Ffmpeg);
-            TemplateVod = current.TemplateVod;
-            TemplateClip = current.TemplateClip;
-            TemplateChat = current.TemplateChat;
-            QueueFolder = current.QueueFolder;
-            SelectedQuality = !EnqueueOptionsViewModel.Qualities.Contains(current.PreferredQuality)
+            TemplateVod = general.TemplateVod;
+            TemplateClip = general.TemplateClip;
+            TemplateChat = general.TemplateChat;
+            QueueFolder = queue.Folder;
+            SelectedQuality = !EnqueueOptionsViewModel.Qualities.Contains(queue.PreferredQuality)
                 ? EnqueueOptionsViewModel.Qualities[0]
-                : current.PreferredQuality;
+                : queue.PreferredQuality;
 
             SelectedQualityOption = FindOption(QualityOptions, SelectedQuality, EnqueueOptionsViewModel.Qualities[0]);
             _suppressSave = false;
@@ -218,20 +221,16 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
             foreach (var name in ThemeService.GetLightThemeOptions())
             {
-                items.Add(new ThemePickerItem(name, ThemeNames.Equals(name, ThemeService.LIGHT)
-                        ? Loc.Get("settings.theme_light_default")
-                        : name,
-                    IsPreferred: ThemeNames.Equals(name, current.GuiLightTheme)));
+                items.Add(new ThemePickerItem(name, ThemeNames.Equals(name, ThemeService.LIGHT) ? Loc.Get("settings.theme_light_default") : name,
+                    IsPreferred: ThemeNames.Equals(name, current.Ui.LightTheme)));
             }
 
             items.Add(new ThemePickerItem(string.Empty, Loc.Get("settings.theme_dark_themes"), IsHeader: true));
             foreach (var name in ThemeService.GetDarkThemeOptions())
             {
-                items.Add(new ThemePickerItem(name, ThemeNames.Equals(name, ThemeService.DARK)
-                        ? Loc.Get("settings.theme_dark_default")
-                        : name,
+                items.Add(new ThemePickerItem(name, ThemeNames.Equals(name, ThemeService.DARK) ? Loc.Get("settings.theme_dark_default") : name,
                     IsDark: true,
-                    IsPreferred: ThemeNames.Equals(name, current.GuiDarkTheme)));
+                    IsPreferred: ThemeNames.Equals(name, current.Ui.DarkTheme)));
             }
 
             return items;
@@ -240,13 +239,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private ThemePickerItem FindPickerItemFromSettings()
         {
             var current = _settings.Current;
-            if (ThemePickerItems.Count == 0 || ThemeNames.Equals(current.GuiTheme, ThemeService.SYSTEM))
+            if (ThemePickerItems.Count == 0 || ThemeNames.Equals(current.Ui.Theme, ThemeService.SYSTEM))
                 return ThemePickerItems.FirstOrDefault(static item => item.IsSystem) ?? ThemePickerItems[0];
 
-            var isDark = ThemeNames.Equals(current.GuiTheme, ThemeService.DARK);
+            var isDark = ThemeNames.Equals(current.Ui.Theme, ThemeService.DARK);
             var preferred = isDark
-                ? current.GuiDarkTheme
-                : current.GuiLightTheme;
+                ? current.Ui.DarkTheme
+                : current.Ui.LightTheme;
 
             var builtin = isDark
                 ? ThemeService.DARK
@@ -296,7 +295,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (!confirmed)
                 return;
 
-            CacheDirectoryService.ClearCacheDirectory(_settings.Current.TempPath, out var selectedError);
+            CacheDirectoryService.ClearCacheDirectory(_settings.Current.General.TempPath, out var selectedError);
             CacheDirectoryService.ClearCacheDirectory(Path.GetTempPath(), out var defaultError);
             var error = selectedError ?? defaultError;
             if (error is not null)
@@ -330,7 +329,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.GuiCulture = value.Code;
+            _settings.Current.Ui.Culture = value.Code;
             _settings.Save();
             LocalizationService.Current.SetCulture(value.Code);
         }
@@ -350,17 +349,17 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
             if (value.IsSystem)
             {
-                _settings.Current.GuiTheme = ThemeService.SYSTEM;
+                _settings.Current.Ui.Theme = ThemeService.SYSTEM;
             }
             else if (value.IsDark)
             {
-                _settings.Current.GuiTheme = ThemeService.DARK;
-                _settings.Current.GuiDarkTheme = value.Value;
+                _settings.Current.Ui.Theme = ThemeService.DARK;
+                _settings.Current.Ui.DarkTheme = value.Value;
             }
             else
             {
-                _settings.Current.GuiTheme = ThemeService.LIGHT;
-                _settings.Current.GuiLightTheme = value.Value;
+                _settings.Current.Ui.Theme = ThemeService.LIGHT;
+                _settings.Current.Ui.LightTheme = value.Value;
             }
 
             _settings.Save();
@@ -394,7 +393,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.HideDonation = value;
+            _settings.Current.Ui.HideDonation = value;
             _settings.Save();
         }
 
@@ -403,7 +402,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.ReduceMotion = value;
+            _settings.Current.Ui.ReduceMotion = value;
             _settings.Save();
             _status.ReduceMotion = value;
         }
@@ -413,7 +412,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.UtcVideoTime = value;
+            _settings.Current.General.UtcVideoTime = value;
             _settings.Save();
         }
 
@@ -422,7 +421,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.OAuth = value;
+            _settings.Current.General.OAuth = value;
             _settings.Save();
         }
 
@@ -431,7 +430,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.TempPath = value;
+            _settings.Current.General.TempPath = value;
             _settings.Save();
         }
 
@@ -440,7 +439,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.DownloadThrottleEnabled = value;
+            _settings.Current.General.DownloadThrottleEnabled = value;
             _settings.Save();
         }
 
@@ -449,7 +448,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.MaximumBandwidthKib = Math.Clamp(value, 1, 122070);
+            _settings.Current.General.MaximumBandwidthKib = Math.Clamp(value, 1, 122070);
             _settings.Save();
         }
 
@@ -458,7 +457,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.FileCollisionBehavior = LabelToCollision(value);
+            _settings.Current.General.FileCollisionBehavior = LabelToCollision(value);
             _settings.Save();
             _collision.ResetSessionBehavior();
         }
@@ -468,7 +467,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.VerboseErrors = value;
+            _settings.Current.General.VerboseErrors = value;
             _settings.Save();
         }
 
@@ -483,7 +482,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.TemplateVod = value;
+            _settings.Current.General.TemplateVod = value;
             _settings.Save();
         }
 
@@ -492,7 +491,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.TemplateClip = value;
+            _settings.Current.General.TemplateClip = value;
             _settings.Save();
         }
 
@@ -501,7 +500,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.TemplateChat = value;
+            _settings.Current.General.TemplateChat = value;
             _settings.Save();
         }
 
@@ -510,7 +509,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.QueueFolder = value;
+            _settings.Current.Queue.Folder = value;
             _settings.Save();
         }
 
@@ -519,7 +518,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            _settings.Current.PreferredQuality = value;
+            _settings.Current.Queue.PreferredQuality = value;
             _settings.Save();
         }
 
@@ -528,9 +527,9 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSave)
                 return;
 
-            var levels = (LogLevel)_settings.Current.LogLevels;
+            var levels = (LogLevel)_settings.Current.Ui.LogLevels;
             levels = enabled ? levels | flag : levels & ~flag;
-            _settings.Current.LogLevels = (int)levels;
+            _settings.Current.Ui.LogLevels = (int)levels;
             _settings.Save();
         }
 

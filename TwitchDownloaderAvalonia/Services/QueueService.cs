@@ -24,14 +24,14 @@ namespace TwitchDownloaderAvalonia.Services
 
         public int LimitVod
         {
-            get => Math.Clamp(_settings.Current.LimitVod, 1, 50);
+            get => Math.Clamp(_settings.Current.Queue.LimitVod, 1, 50);
             set
             {
                 var clamped = Math.Clamp(value, 1, 50);
-                if (_settings.Current.LimitVod == clamped)
+                if (_settings.Current.Queue.LimitVod == clamped)
                     return;
 
-                _settings.Current.LimitVod = clamped;
+                _settings.Current.Queue.LimitVod = clamped;
                 _settings.Save();
                 OnPropertyChanged();
                 RequestPump();
@@ -40,14 +40,14 @@ namespace TwitchDownloaderAvalonia.Services
 
         public int LimitClip
         {
-            get => Math.Clamp(_settings.Current.LimitClip, 1, 50);
+            get => Math.Clamp(_settings.Current.Queue.LimitClip, 1, 50);
             set
             {
                 var clamped = Math.Clamp(value, 1, 50);
-                if (_settings.Current.LimitClip == clamped)
+                if (_settings.Current.Queue.LimitClip == clamped)
                     return;
 
-                _settings.Current.LimitClip = clamped;
+                _settings.Current.Queue.LimitClip = clamped;
                 _settings.Save();
                 OnPropertyChanged();
                 RequestPump();
@@ -56,14 +56,14 @@ namespace TwitchDownloaderAvalonia.Services
 
         public int LimitChat
         {
-            get => Math.Clamp(_settings.Current.LimitChat, 1, 50);
+            get => Math.Clamp(_settings.Current.Queue.LimitChat, 1, 50);
             set
             {
                 var clamped = Math.Clamp(value, 1, 50);
-                if (_settings.Current.LimitChat == clamped)
+                if (_settings.Current.Queue.LimitChat == clamped)
                     return;
 
-                _settings.Current.LimitChat = clamped;
+                _settings.Current.Queue.LimitChat = clamped;
                 _settings.Save();
                 OnPropertyChanged();
                 RequestPump();
@@ -72,14 +72,14 @@ namespace TwitchDownloaderAvalonia.Services
 
         public int LimitRender
         {
-            get => Math.Clamp(_settings.Current.LimitRender, 1, 50);
+            get => Math.Clamp(_settings.Current.Queue.LimitRender, 1, 50);
             set
             {
                 var clamped = Math.Clamp(value, 1, 50);
-                if (_settings.Current.LimitRender == clamped)
+                if (_settings.Current.Queue.LimitRender == clamped)
                     return;
 
-                _settings.Current.LimitRender = clamped;
+                _settings.Current.Queue.LimitRender = clamped;
                 _settings.Save();
                 OnPropertyChanged();
                 RequestPump();
@@ -95,7 +95,7 @@ namespace TwitchDownloaderAvalonia.Services
         [ObservableProperty]
         public partial bool CanCancelAll { get; private set; }
 
-        public LogLevel LogLevel => (LogLevel)_settings.Current.LogLevels;
+        public LogLevel LogLevel => (LogLevel)_settings.Current.Ui.LogLevels;
 
         public void NotifyLimitsChanged()
         {

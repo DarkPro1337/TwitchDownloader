@@ -4,7 +4,7 @@ namespace TwitchDownloaderAvalonia.Services
     {
         public AppStatus(SettingsService settings)
         {
-            ReduceMotion = settings.Current.ReduceMotion;
+            ReduceMotion = settings.Current.Ui.ReduceMotion;
             Message = Loc.Get("status.idle");
 
             LocalizationService.Current.CultureChanged += OnCultureChanged;

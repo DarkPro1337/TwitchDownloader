@@ -31,6 +31,8 @@ namespace TwitchDownloaderAvalonia.Services
 
         public AppSettings Current { get; }
 
+        public event EventHandler? DefaultsRestored;
+
         public void Save()
         {
             lock (_saveLock)
@@ -46,6 +48,7 @@ namespace TwitchDownloaderAvalonia.Services
         {
             Current.CopyFrom(new AppSettings());
             Save();
+            DefaultsRestored?.Invoke(this, EventArgs.Empty);
         }
 
         private AppSettings Load()

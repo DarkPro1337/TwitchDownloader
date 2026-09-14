@@ -45,8 +45,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _thumbnails = thumbnails;
             _queue = queue;
             _suppressSave = true;
-            DownloadThreads = Math.Clamp(_settings.Current.VodDownloadThreads, 1, 20);
-            TrimMode = _settings.Current.VodTrimMode;
+            DownloadThreads = Math.Clamp(_settings.Current.Vod.DownloadThreads, 1, 20);
+            TrimMode = _settings.Current.Vod.TrimMode;
             _suppressSave = false;
             Status = Loc.Get("status.idle");
         }
@@ -181,7 +181,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             {
                 _videoId = videoId;
                 var videoInfoTask = TwitchHelper.GetVideoInfo(videoId);
-                var tokenTask = TwitchHelper.GetVideoToken(videoId, _settings.Current.OAuth);
+                var tokenTask = TwitchHelper.GetVideoToken(videoId, _settings.Current.General.OAuth);
                 await Task.WhenAll(videoInfoTask, tokenTask);
 
                 var token = tokenTask.Result.data.videoPlaybackAccessToken;
@@ -210,7 +210,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 _videoTitle = video.title;
                 InfoTitle = _videoTitle;
                 var createdAt = video.createdAt;
-                _videoTime = _settings.Current.UtcVideoTime ? createdAt : createdAt.ToLocalTime();
+                _videoTime = _settings.Current.General.UtcVideoTime ? createdAt : createdAt.ToLocalTime();
                 InfoCreatedAt = _videoTime.ToString(CultureInfo.CurrentCulture);
                 _viewCount = video.viewCount;
                 _game = video.game?.displayName ?? Loc.Get("common.unknown_game");
@@ -249,7 +249,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             {
                 AppendLog(Loc.Error(ex.Message));
                 await _dialogs.ShowErrorAsync(Loc.Get("vod.get_info_failed"), ex.Message);
-                if (_settings.Current.VerboseErrors)
+                if (_settings.Current.General.VerboseErrors)
                     await _dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
             }
             finally
@@ -316,13 +316,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         partial void OnDownloadThreadsChanged(int value)
         {
-            _settings.Current.VodDownloadThreads = Math.Clamp(value, 1, 20);
+            _settings.Current.Vod.DownloadThreads = Math.Clamp(value, 1, 20);
             SaveSettings();
         }
 
         partial void OnTrimModeChanged(VideoTrimMode value)
         {
-            _settings.Current.VodTrimMode = value;
+            _settings.Current.Vod.TrimMode = value;
             SaveSettings();
         }
 
@@ -360,9 +360,9 @@ namespace TwitchDownloaderAvalonia.ViewModels
             return new VideoDownloadOptions
             {
                 DownloadThreads = DownloadThreads,
-                ThrottleKib = _settings.Current.DownloadThrottleEnabled ? _settings.Current.MaximumBandwidthKib : -1,
+                ThrottleKib = _settings.Current.General.DownloadThrottleEnabled ? _settings.Current.General.MaximumBandwidthKib : -1,
                 Filename = filename,
-                Oauth = _settings.Current.OAuth,
+                Oauth = _settings.Current.General.OAuth,
                 Quality = SelectedQuality!.Quality.ToString(),
                 Id = _videoId,
                 TrimBeginning = TrimStart,
@@ -370,7 +370,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 TrimEnding = TrimEnd,
                 TrimEndingTime = EndTime,
                 FfmpegPath = _ffmpeg.ResolvedPath,
-                TempFolder = _settings.Current.TempPath,
+                TempFolder = _settings.Current.General.TempPath,
                 TrimMode = TrimMode,
             };
         }
@@ -422,7 +422,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private string BuildSuggestedFileName(string extension)
         {
             return FilenameService.GetFilename(
-                _settings.Current.TemplateVod,
+                _settings.Current.General.TemplateVod,
                 _videoTitle,
                 _videoId.ToString(),
                 _videoTime,

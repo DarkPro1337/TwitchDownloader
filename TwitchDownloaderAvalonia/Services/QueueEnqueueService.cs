@@ -27,7 +27,7 @@ namespace TwitchDownloaderAvalonia.Services
             catch (Exception ex)
             {
                 await dialogs.ShowErrorAsync(Loc.Get("search.invalid_folder_title"), Loc.Get("search.invalid_folder"));
-                if (settings.Current.VerboseErrors)
+                if (settings.Current.General.VerboseErrors)
                     await dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
 
                 return false;

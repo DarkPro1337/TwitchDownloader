@@ -44,7 +44,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _thumbnails = thumbnails;
             _queue = queue;
             _suppressSave = true;
-            EncodeMetadata = _settings.Current.EncodeClipMetadata;
+            EncodeMetadata = _settings.Current.Clip.EncodeMetadata;
             _suppressSave = false;
             Status = Loc.Get("status.idle");
         }
@@ -163,7 +163,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 _clipTitle = clip.title;
                 InfoTitle = _clipTitle;
                 var createdAt = clip.createdAt;
-                _clipTime = _settings.Current.UtcVideoTime ? createdAt : createdAt.ToLocalTime();
+                _clipTime = _settings.Current.General.UtcVideoTime ? createdAt : createdAt.ToLocalTime();
                 InfoCreatedAt = _clipTime.ToString(CultureInfo.CurrentCulture);
                 _viewCount = clip.viewCount;
                 _game = clip.game?.displayName ?? Loc.Get("common.unknown_game");
@@ -181,7 +181,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             {
                 AppendLog(Loc.Error(ex.Message));
                 await _dialogs.ShowErrorAsync(Loc.Get("clip.get_info_failed"), ex.Message);
-                if (_settings.Current.VerboseErrors)
+                if (_settings.Current.General.VerboseErrors)
                     await _dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
             }
             finally
@@ -203,8 +203,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 Filename = path,
                 Id = _clipId,
                 Quality = SelectedQuality!.Quality.ToString(),
-                ThrottleKib = _settings.Current.DownloadThrottleEnabled ? _settings.Current.MaximumBandwidthKib : -1,
-                TempFolder = _settings.Current.TempPath,
+                ThrottleKib = _settings.Current.General.DownloadThrottleEnabled ? _settings.Current.General.MaximumBandwidthKib : -1,
+                TempFolder = _settings.Current.General.TempPath,
                 EncodeMetadata = EncodeMetadata,
                 FfmpegPath = _ffmpeg.ResolvedPath,
                 FileCollisionCallback = file => _collision.HandleCollision(file),
@@ -237,7 +237,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         partial void OnEncodeMetadataChanged(bool value)
         {
-            _settings.Current.EncodeClipMetadata = value;
+            _settings.Current.Clip.EncodeMetadata = value;
             if (!_suppressSave)
                 _settings.Save();
         }
@@ -273,7 +273,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private string BuildSuggestedFileName()
         {
             return FilenameService.GetFilename(
-                _settings.Current.TemplateClip,
+                _settings.Current.General.TemplateClip,
                 _clipTitle,
                 _clipId,
                 _clipTime,

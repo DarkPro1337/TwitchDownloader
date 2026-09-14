@@ -114,7 +114,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 {
                     Id = entry.Id,
                     Title = video.title,
-                    Time = settings.Current.UtcVideoTime ? video.createdAt : video.createdAt.ToLocalTime(),
+                    Time = settings.Current.General.UtcVideoTime ? video.createdAt : video.createdAt.ToLocalTime(),
                     Length = video.lengthSeconds,
                     Views = video.viewCount,
                     Game = video.game?.displayName ?? Loc.Get("common.unknown_game"),
@@ -145,7 +145,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 {
                     Id = entry.Id,
                     Title = clip.title,
-                    Time = settings.Current.UtcVideoTime ? clip.createdAt : clip.createdAt.ToLocalTime(),
+                    Time = settings.Current.General.UtcVideoTime ? clip.createdAt : clip.createdAt.ToLocalTime(),
                     Length = clip.durationSeconds,
                     Views = clip.viewCount,
                     Game = clip.game?.displayName ?? Loc.Get("common.unknown_game"),

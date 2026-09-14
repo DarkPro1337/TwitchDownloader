@@ -68,7 +68,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private readonly ThumbnailService _thumbnails;
         private readonly QueueService _queue;
 
-        private readonly bool _loading;
+        private bool _loading;
 
         private QueueItemViewModel? _queued;
         private ChatRoot? _chatJson;
@@ -106,6 +106,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _collision = collision;
             _thumbnails = thumbnails;
             _queue = queue;
+            _settings.DefaultsRestored += OnDefaultsRestored;
 
             foreach (var font in LoadFonts())
                 Fonts.Add(font);
@@ -138,13 +139,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial string? SelectedFont { get; set; }
 
         [ObservableProperty]
-        public partial double FontSize { get; set; }
+        public partial double FontSize { get; set; } = 24;
 
         [ObservableProperty]
-        public partial int ChatWidth { get; set; }
+        public partial int ChatWidth { get; set; } = 700;
 
         [ObservableProperty]
-        public partial int ChatHeight { get; set; }
+        public partial int ChatHeight { get; set; } = 1200;
 
         [ObservableProperty]
         public partial string FontColorHex { get; set; } = "#FFFFFFFF";
@@ -165,31 +166,31 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial bool Timestamp { get; set; }
 
         [ObservableProperty]
-        public partial bool SubMessages { get; set; }
+        public partial bool SubMessages { get; set; } = true;
 
         [ObservableProperty]
-        public partial bool ChatBadges { get; set; }
+        public partial bool ChatBadges { get; set; } = true;
 
         [ObservableProperty]
-        public partial double UpdateRate { get; set; }
+        public partial double UpdateRate { get; set; } = 0.2;
 
         [ObservableProperty]
-        public partial bool DisperseCommentOffsets { get; set; }
+        public partial bool DisperseCommentOffsets { get; set; } = true;
 
         [ObservableProperty]
         public partial bool AlternateMessageBackgrounds { get; set; }
 
         [ObservableProperty]
-        public partial bool AdjustUsernameVisibility { get; set; }
+        public partial bool AdjustUsernameVisibility { get; set; } = true;
 
         [ObservableProperty]
-        public partial bool BttvEmotes { get; set; }
+        public partial bool BttvEmotes { get; set; } = true;
 
         [ObservableProperty]
-        public partial bool FfzEmotes { get; set; }
+        public partial bool FfzEmotes { get; set; } = true;
 
         [ObservableProperty]
-        public partial bool StvEmotes { get; set; }
+        public partial bool StvEmotes { get; set; } = true;
 
         [ObservableProperty]
         public partial bool RenderUserAvatars { get; set; }
@@ -207,7 +208,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial string HighlightUsersList { get; set; } = string.Empty;
 
         [ObservableProperty]
-        public partial EmojiVendor EmojiVendor { get; set; }
+        public partial EmojiVendor EmojiVendor { get; set; } = EmojiVendor.GoogleNotoColor;
 
         [ObservableProperty]
         public partial bool FilterBroadcaster { get; set; }
@@ -279,7 +280,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial RenderCodec? SelectedCodec { get; set; }
 
         [ObservableProperty]
-        public partial int Framerate { get; set; }
+        public partial int Framerate { get; set; } = 60;
 
         [ObservableProperty]
         public partial bool GenerateMask { get; set; }
@@ -569,7 +570,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 InputFile = path;
                 AppendLog(Loc.Error(ex.Message));
                 await _dialogs.ShowErrorAsync(Loc.Get("update.read_failed"), ex.Message);
-                if (_settings.Current.VerboseErrors)
+                if (_settings.Current.General.VerboseErrors)
                     await _dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
             }
             finally
@@ -585,7 +586,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 ? firstComment.created_at - TimeSpan.FromSeconds(firstComment.content_offset_seconds)
                 : chat.video?.created_at ?? default;
 
-            _videoTime = _settings.Current.UtcVideoTime ? videoCreatedAt : videoCreatedAt.ToLocalTime();
+            _videoTime = _settings.Current.General.UtcVideoTime ? videoCreatedAt : videoCreatedAt.ToLocalTime();
             _hasCreatedAt = videoCreatedAt != default;
             InfoCreatedAt = _hasCreatedAt
                 ? _videoTime.ToString(CultureInfo.CurrentCulture)
@@ -689,7 +690,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             {
                 AppendLog(Loc.Error(ex.Message));
                 await _dialogs.ShowErrorAsync(Loc.Get("update.get_info_failed"), ex.Message);
-                if (_settings.Current.VerboseErrors)
+                if (_settings.Current.General.VerboseErrors)
                     await _dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
             }
         }
@@ -805,7 +806,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 FfmpegOutputArgs = FfmpegOutputArgs,
                 Sharpening = Sharpening,
                 GenerateMask = GenerateMask,
-                TempFolder = _settings.Current.TempPath,
+                TempFolder = _settings.Current.General.TempPath,
                 SubMessages = SubMessages,
                 ChatBadges = ChatBadges,
                 Offline = Offline,
@@ -819,47 +820,62 @@ namespace TwitchDownloaderAvalonia.ViewModels
             }, _ffmpeg.ResolvedPath, file => _collision.HandleCollision(file)!);
         }
 
+        private void OnDefaultsRestored(object? sender, EventArgs e)
+        {
+            _loading = true;
+            try
+            {
+                LoadFromSettings();
+                LoadFfmpegArgs();
+            }
+            finally
+            {
+                _loading = false;
+            }
+        }
+
         private void LoadFromSettings()
         {
-            var current = _settings.Current;
-            SelectedFont = !Fonts.Contains(current.RenderFont)
+            var render = _settings.Current.Render;
+            var chat = _settings.Current.Chat;
+            SelectedFont = !Fonts.Contains(render.Font)
                 ? Fonts.FirstOrDefault(font => font == "Inter Embedded") ?? Fonts.FirstOrDefault()
-                : current.RenderFont;
+                : render.Font;
 
-            if (SelectedFont is null && !string.IsNullOrWhiteSpace(current.RenderFont))
+            if (SelectedFont is null && !string.IsNullOrWhiteSpace(render.Font))
             {
-                Fonts.Add(current.RenderFont);
-                SelectedFont = current.RenderFont;
+                Fonts.Add(render.Font);
+                SelectedFont = render.Font;
             }
 
-            FontSize = current.RenderFontSize;
-            ChatWidth = current.RenderWidth;
-            ChatHeight = current.RenderHeight;
-            FontColorHex = current.RenderFontColor;
-            BackgroundColorHex = current.RenderBackgroundColor;
-            AlternateBackgroundColorHex = current.RenderAlternateBackgroundColor;
-            HighlightUsersColorHex = current.RenderHighlightUsersColor;
-            Outline = current.RenderOutline;
-            Timestamp = current.RenderTimestamp;
-            SubMessages = current.RenderSubMessages;
-            ChatBadges = current.RenderChatBadges;
-            UpdateRate = current.RenderUpdateTime;
-            DisperseCommentOffsets = current.RenderDisperseCommentOffsets;
-            AlternateMessageBackgrounds = current.RenderAlternateMessageBackgrounds;
-            AdjustUsernameVisibility = current.RenderAdjustUsernameVisibility;
-            BttvEmotes = current.BttvEmotes;
-            FfzEmotes = current.FfzEmotes;
-            StvEmotes = current.StvEmotes;
-            RenderUserAvatars = current.RenderUserAvatars;
-            Offline = current.RenderOffline;
-            IgnoreUsersList = current.RenderIgnoreUsersList;
-            BannedWordsList = current.RenderBannedWordsList;
-            HighlightUsersList = current.RenderHighlightUsersList;
-            EmojiVendor = Enum.IsDefined(typeof(EmojiVendor), current.RenderEmojiVendor)
-                ? (EmojiVendor)current.RenderEmojiVendor
+            FontSize = render.FontSize;
+            ChatWidth = render.Width;
+            ChatHeight = render.Height;
+            FontColorHex = render.FontColor;
+            BackgroundColorHex = render.BackgroundColor;
+            AlternateBackgroundColorHex = render.AlternateBackgroundColor;
+            HighlightUsersColorHex = render.HighlightUsersColor;
+            Outline = render.Outline;
+            Timestamp = render.Timestamp;
+            SubMessages = render.SubMessages;
+            ChatBadges = render.ChatBadges;
+            UpdateRate = render.UpdateTime;
+            DisperseCommentOffsets = render.DisperseCommentOffsets;
+            AlternateMessageBackgrounds = render.AlternateMessageBackgrounds;
+            AdjustUsernameVisibility = render.AdjustUsernameVisibility;
+            BttvEmotes = chat.BttvEmotes;
+            FfzEmotes = chat.FfzEmotes;
+            StvEmotes = chat.StvEmotes;
+            RenderUserAvatars = render.UserAvatars;
+            Offline = render.Offline;
+            IgnoreUsersList = render.IgnoreUsersList;
+            BannedWordsList = render.BannedWordsList;
+            HighlightUsersList = render.HighlightUsersList;
+            EmojiVendor = Enum.IsDefined(typeof(EmojiVendor), render.EmojiVendor)
+                ? (EmojiVendor)render.EmojiVendor
                 : EmojiVendor.GoogleNotoColor;
 
-            var mask = (ChatBadgeType)current.RenderChatBadgeMask;
+            var mask = (ChatBadgeType)render.ChatBadgeMask;
             FilterBroadcaster = mask.HasFlag(ChatBadgeType.Broadcaster);
             FilterModerator = mask.HasFlag(ChatBadgeType.Moderator);
             FilterVip = mask.HasFlag(ChatBadgeType.VIP);
@@ -869,24 +885,23 @@ namespace TwitchDownloaderAvalonia.ViewModels
             FilterPrimeGaming = mask.HasFlag(ChatBadgeType.PrimeGaming);
             FilterOther = mask.HasFlag(ChatBadgeType.Other);
 
-            EmoteScale = current.RenderEmoteScale;
-            BadgeScale = current.RenderBadgeScale;
-            EmojiScale = current.RenderEmojiScale;
-            AvatarScale = current.RenderAvatarScale;
-            OutlineScale = current.RenderOutlineScale;
-            UsernameFontScale = current.RenderUsernameFontScale;
-            VerticalSpacingScale = current.RenderVerticalSpacingScale;
-            SectionHeightScale = current.RenderSectionHeightScale;
-            WordSpacingScale = current.RenderWordSpacingScale;
-            EmoteSpacingScale = current.RenderEmoteSpacingScale;
-            AccentStrokeScale = current.RenderAccentStrokeScale;
-            AccentIndentScale = current.RenderAccentIndentScale;
-            SidePaddingScale = current.RenderSidePaddingScale;
-            Framerate = current.RenderFramerate;
-            GenerateMask = current.RenderGenerateMask;
-            Sharpening = current.RenderSharpening;
-            SelectedContainer = Containers.FirstOrDefault(container => container.Name == current.RenderVideoContainer)
-                ?? Containers.FirstOrDefault();
+            EmoteScale = render.EmoteScale;
+            BadgeScale = render.BadgeScale;
+            EmojiScale = render.EmojiScale;
+            AvatarScale = render.AvatarScale;
+            OutlineScale = render.OutlineScale;
+            UsernameFontScale = render.UsernameFontScale;
+            VerticalSpacingScale = render.VerticalSpacingScale;
+            SectionHeightScale = render.SectionHeightScale;
+            WordSpacingScale = render.WordSpacingScale;
+            EmoteSpacingScale = render.EmoteSpacingScale;
+            AccentStrokeScale = render.AccentStrokeScale;
+            AccentIndentScale = render.AccentIndentScale;
+            SidePaddingScale = render.SidePaddingScale;
+            Framerate = render.Framerate;
+            GenerateMask = render.GenerateMask;
+            Sharpening = render.Sharpening;
+            SelectedContainer = Containers.FirstOrDefault(container => container.Name == render.VideoContainer) ?? Containers.FirstOrDefault();
         }
 
         private void PersistSettings()
@@ -894,60 +909,63 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_loading)
                 return;
 
-            var current = _settings.Current;
-            current.RenderFont = SelectedFont ?? "Inter Embedded";
-            current.RenderFontSize = FontSize;
-            current.RenderWidth = ChatWidth;
-            current.RenderHeight = ChatHeight;
-            current.RenderFontColor = FontColorHex;
-            current.RenderBackgroundColor = BackgroundColorHex;
-            current.RenderAlternateBackgroundColor = AlternateBackgroundColorHex;
-            current.RenderHighlightUsersColor = HighlightUsersColorHex;
-            current.RenderOutline = Outline;
-            current.RenderTimestamp = Timestamp;
-            current.RenderSubMessages = SubMessages;
-            current.RenderChatBadges = ChatBadges;
-            current.RenderUpdateTime = UpdateRate;
-            current.RenderDisperseCommentOffsets = DisperseCommentOffsets;
-            current.RenderAlternateMessageBackgrounds = AlternateMessageBackgrounds;
-            current.RenderAdjustUsernameVisibility = AdjustUsernameVisibility;
-            current.BttvEmotes = BttvEmotes;
-            current.FfzEmotes = FfzEmotes;
-            current.StvEmotes = StvEmotes;
-            current.RenderUserAvatars = RenderUserAvatars;
-            current.RenderOffline = Offline;
-            current.RenderIgnoreUsersList = JoinCsv(IgnoreUsersList);
-            current.RenderBannedWordsList = JoinCsv(BannedWordsList);
-            current.RenderHighlightUsersList = JoinCsv(HighlightUsersList);
-            current.RenderEmojiVendor = (int)EmojiVendor;
-            current.RenderChatBadgeMask = (int)BuildBadgeMask();
-            current.RenderEmoteScale = EmoteScale;
-            current.RenderBadgeScale = BadgeScale;
-            current.RenderEmojiScale = EmojiScale;
-            current.RenderAvatarScale = AvatarScale;
-            current.RenderOutlineScale = OutlineScale;
-            current.RenderUsernameFontScale = UsernameFontScale;
-            current.RenderVerticalSpacingScale = VerticalSpacingScale;
-            current.RenderSectionHeightScale = SectionHeightScale;
-            current.RenderWordSpacingScale = WordSpacingScale;
-            current.RenderEmoteSpacingScale = EmoteSpacingScale;
-            current.RenderAccentStrokeScale = AccentStrokeScale;
-            current.RenderAccentIndentScale = AccentIndentScale;
-            current.RenderSidePaddingScale = SidePaddingScale;
-            current.RenderFramerate = Framerate;
-            current.RenderGenerateMask = GenerateMask;
-            current.RenderSharpening = Sharpening;
+            var render = _settings.Current.Render;
+            var chat = _settings.Current.Chat;
+            render.Font = SelectedFont ?? "Inter Embedded";
+            render.FontSize = FontSize;
+            render.Width = ChatWidth;
+            render.Height = ChatHeight;
+            render.FontColor = FontColorHex;
+            render.BackgroundColor = BackgroundColorHex;
+            render.AlternateBackgroundColor = AlternateBackgroundColorHex;
+            render.HighlightUsersColor = HighlightUsersColorHex;
+            render.Outline = Outline;
+            render.Timestamp = Timestamp;
+            render.SubMessages = SubMessages;
+            render.ChatBadges = ChatBadges;
+            render.UpdateTime = UpdateRate;
+            render.DisperseCommentOffsets = DisperseCommentOffsets;
+            render.AlternateMessageBackgrounds = AlternateMessageBackgrounds;
+            render.AdjustUsernameVisibility = AdjustUsernameVisibility;
+            chat.BttvEmotes = BttvEmotes;
+            chat.FfzEmotes = FfzEmotes;
+            chat.StvEmotes = StvEmotes;
+            render.UserAvatars = RenderUserAvatars;
+            render.Offline = Offline;
+            render.IgnoreUsersList = JoinCsv(IgnoreUsersList);
+            render.BannedWordsList = JoinCsv(BannedWordsList);
+            render.HighlightUsersList = JoinCsv(HighlightUsersList);
+            render.EmojiVendor = (int)EmojiVendor;
+            render.ChatBadgeMask = (int)BuildBadgeMask();
+            render.EmoteScale = EmoteScale;
+            render.BadgeScale = BadgeScale;
+            render.EmojiScale = EmojiScale;
+            render.AvatarScale = AvatarScale;
+            render.OutlineScale = OutlineScale;
+            render.UsernameFontScale = UsernameFontScale;
+            render.VerticalSpacingScale = VerticalSpacingScale;
+            render.SectionHeightScale = SectionHeightScale;
+            render.WordSpacingScale = WordSpacingScale;
+            render.EmoteSpacingScale = EmoteSpacingScale;
+            render.AccentStrokeScale = AccentStrokeScale;
+            render.AccentIndentScale = AccentIndentScale;
+            render.SidePaddingScale = SidePaddingScale;
+            render.Framerate = Framerate;
+            render.GenerateMask = GenerateMask;
+            render.Sharpening = Sharpening;
+
             if (SelectedContainer is not null)
-                current.RenderVideoContainer = SelectedContainer.Name;
+                render.VideoContainer = SelectedContainer.Name;
+
             if (SelectedCodec is not null)
-                current.RenderVideoCodec = SelectedCodec.Name;
+                render.VideoCodec = SelectedCodec.Name;
 
             _settings.Save();
         }
 
         private void RefreshCodecs(RenderContainer? container)
         {
-            var preferred = _settings.Current.RenderVideoCodec;
+            var preferred = _settings.Current.Render.VideoCodec;
             Codecs.Clear();
             if (container is null)
             {
@@ -996,7 +1014,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
             match.InputArgs = FfmpegInputArgs;
             match.OutputArgs = FfmpegOutputArgs;
-            _settings.Current.RenderFfmpegArguments = JsonSerializer.Serialize(args);
+
+            _settings.Current.Render.FfmpegArguments = JsonSerializer.Serialize(args);
             _settings.Save();
         }
 
@@ -1004,7 +1023,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         {
             try
             {
-                return JsonSerializer.Deserialize<List<CustomFfmpegArgs>>(_settings.Current.RenderFfmpegArguments) ?? [];
+                return JsonSerializer.Deserialize<List<CustomFfmpegArgs>>(_settings.Current.Render.FfmpegArguments) ?? [];
             }
             catch
             {
@@ -1048,7 +1067,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
             var trimEnd = TrimEnd ? EndTime : _videoLength;
             var name = FilenameService.GetFilename(
-                _settings.Current.TemplateChat,
+                _settings.Current.General.TemplateChat,
                 _title,
                 _videoId,
                 _videoTime,

@@ -148,9 +148,12 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
         {
             var settings = new AppSettings
             {
-                TemplateVod = "{title}",
-                TemplateChat = "{title}",
-                RenderVideoContainer = "MP4",
+                General =
+                {
+                    TemplateVod = "{title}",
+                    TemplateChat = "{title}",
+                },
+                Render = { VideoContainer = "MP4" },
             };
             var jobs = Build(Items(Vod("1", "SameName")), new EnqueueOptions
             {

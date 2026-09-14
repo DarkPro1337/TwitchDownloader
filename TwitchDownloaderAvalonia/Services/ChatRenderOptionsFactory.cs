@@ -64,8 +64,7 @@ namespace TwitchDownloaderAvalonia.Services
         public static string ContainerExtension(AppSettings settings)
         {
             var containers = RenderEncodingPresets.CreateContainers();
-            var container = containers.FirstOrDefault(item => item.Name == settings.RenderVideoContainer)
-                            ?? containers[0];
+            var container = containers.FirstOrDefault(item => item.Name == settings.Render.VideoContainer) ?? containers[0];
             return container.Name.ToLowerInvariant();
         }
 
@@ -76,60 +75,62 @@ namespace TwitchDownloaderAvalonia.Services
             string ffmpegPath,
             Func<FileInfo, FileInfo> collisionCallback)
         {
+            var render = settings.Render;
+            var chat = settings.Chat;
             var (inputArgs, outputArgs) = ResolveFfmpegArgs(settings);
-            var emojiVendor = Enum.IsDefined(typeof(EmojiVendor), settings.RenderEmojiVendor)
-                ? (EmojiVendor)settings.RenderEmojiVendor
+            var emojiVendor = Enum.IsDefined(typeof(EmojiVendor), render.EmojiVendor)
+                ? (EmojiVendor)render.EmojiVendor
                 : EmojiVendor.GoogleNotoColor;
 
             return Create(new ChatRenderBuildArgs
             {
                 InputFile = inputFile,
                 OutputFile = outputFile,
-                BackgroundColorHex = settings.RenderBackgroundColor,
-                AlternateBackgroundColorHex = settings.RenderAlternateBackgroundColor,
-                FontColorHex = settings.RenderFontColor,
-                HighlightUsersColorHex = settings.RenderHighlightUsersColor,
-                AlternateMessageBackgrounds = settings.RenderAlternateMessageBackgrounds,
-                ChatHeight = settings.RenderHeight,
-                ChatWidth = settings.RenderWidth,
-                BttvEmotes = settings.BttvEmotes,
-                FfzEmotes = settings.FfzEmotes,
-                StvEmotes = settings.StvEmotes,
-                Outline = settings.RenderOutline,
-                Font = string.IsNullOrWhiteSpace(settings.RenderFont) ? "Inter Embedded" : settings.RenderFont,
-                FontSize = settings.RenderFontSize,
-                UpdateRate = settings.RenderUpdateTime,
-                EmoteScale = settings.RenderEmoteScale,
-                BadgeScale = settings.RenderBadgeScale,
-                EmojiScale = settings.RenderEmojiScale,
-                AvatarScale = settings.RenderAvatarScale,
-                SidePaddingScale = settings.RenderSidePaddingScale,
-                SectionHeightScale = settings.RenderSectionHeightScale,
-                WordSpacingScale = settings.RenderWordSpacingScale,
-                EmoteSpacingScale = settings.RenderEmoteSpacingScale,
-                AccentIndentScale = settings.RenderAccentIndentScale,
-                AccentStrokeScale = settings.RenderAccentStrokeScale,
-                VerticalSpacingScale = settings.RenderVerticalSpacingScale,
-                UsernameFontScale = settings.RenderUsernameFontScale,
-                OutlineScale = settings.RenderOutlineScale,
-                HighlightUsersList = settings.RenderHighlightUsersList,
-                IgnoreUsersList = settings.RenderIgnoreUsersList,
-                BannedWordsList = settings.RenderBannedWordsList,
-                Timestamp = settings.RenderTimestamp,
-                Framerate = settings.RenderFramerate,
+                BackgroundColorHex = render.BackgroundColor,
+                AlternateBackgroundColorHex = render.AlternateBackgroundColor,
+                FontColorHex = render.FontColor,
+                HighlightUsersColorHex = render.HighlightUsersColor,
+                AlternateMessageBackgrounds = render.AlternateMessageBackgrounds,
+                ChatHeight = render.Height,
+                ChatWidth = render.Width,
+                BttvEmotes = chat.BttvEmotes,
+                FfzEmotes = chat.FfzEmotes,
+                StvEmotes = chat.StvEmotes,
+                Outline = render.Outline,
+                Font = string.IsNullOrWhiteSpace(render.Font) ? "Inter Embedded" : render.Font,
+                FontSize = render.FontSize,
+                UpdateRate = render.UpdateTime,
+                EmoteScale = render.EmoteScale,
+                BadgeScale = render.BadgeScale,
+                EmojiScale = render.EmojiScale,
+                AvatarScale = render.AvatarScale,
+                SidePaddingScale = render.SidePaddingScale,
+                SectionHeightScale = render.SectionHeightScale,
+                WordSpacingScale = render.WordSpacingScale,
+                EmoteSpacingScale = render.EmoteSpacingScale,
+                AccentIndentScale = render.AccentIndentScale,
+                AccentStrokeScale = render.AccentStrokeScale,
+                VerticalSpacingScale = render.VerticalSpacingScale,
+                UsernameFontScale = render.UsernameFontScale,
+                OutlineScale = render.OutlineScale,
+                HighlightUsersList = render.HighlightUsersList,
+                IgnoreUsersList = render.IgnoreUsersList,
+                BannedWordsList = render.BannedWordsList,
+                Timestamp = render.Timestamp,
+                Framerate = render.Framerate,
                 FfmpegInputArgs = inputArgs,
                 FfmpegOutputArgs = outputArgs,
-                Sharpening = settings.RenderSharpening,
-                GenerateMask = settings.RenderGenerateMask,
-                TempFolder = settings.TempPath,
-                SubMessages = settings.RenderSubMessages,
-                ChatBadges = settings.RenderChatBadges,
-                Offline = settings.RenderOffline,
-                RenderUserAvatars = settings.RenderUserAvatars,
-                DisperseCommentOffsets = settings.RenderDisperseCommentOffsets,
-                AdjustUsernameVisibility = settings.RenderAdjustUsernameVisibility,
+                Sharpening = render.Sharpening,
+                GenerateMask = render.GenerateMask,
+                TempFolder = settings.General.TempPath,
+                SubMessages = render.SubMessages,
+                ChatBadges = render.ChatBadges,
+                Offline = render.Offline,
+                RenderUserAvatars = render.UserAvatars,
+                DisperseCommentOffsets = render.DisperseCommentOffsets,
+                AdjustUsernameVisibility = render.AdjustUsernameVisibility,
                 EmojiVendor = emojiVendor,
-                ChatBadgeMask = (ChatBadgeType)settings.RenderChatBadgeMask,
+                ChatBadgeMask = (ChatBadgeType)render.ChatBadgeMask,
                 StartOverride = -1,
                 EndOverride = -1,
             }, ffmpegPath, collisionCallback);
@@ -226,10 +227,11 @@ namespace TwitchDownloaderAvalonia.Services
 
         private static (string InputArgs, string OutputArgs) ResolveFfmpegArgs(AppSettings settings)
         {
+            var render = settings.Render;
             var containers = RenderEncodingPresets.CreateContainers();
-            var container = containers.FirstOrDefault(item => item.Name == settings.RenderVideoContainer) ?? containers[0];
-            var codec = container.Codecs.FirstOrDefault(item => item.Name == settings.RenderVideoCodec) ?? container.Codecs[0];
-            var match = DeserializeFfmpegArgs(settings.RenderFfmpegArguments)
+            var container = containers.FirstOrDefault(item => item.Name == render.VideoContainer) ?? containers[0];
+            var codec = container.Codecs.FirstOrDefault(item => item.Name == render.VideoCodec) ?? container.Codecs[0];
+            var match = DeserializeFfmpegArgs(render.FfmpegArguments)
                 .FirstOrDefault(item => item.CodecName == codec.Name && item.ContainerName == container.Name);
 
             var input = string.IsNullOrWhiteSpace(match?.InputArgs) ? codec.InputArgs : match.InputArgs;

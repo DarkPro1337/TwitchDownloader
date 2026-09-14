@@ -247,7 +247,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                         }
                         catch (Exception ex)
                         {
-                            if (_settings.Current.VerboseErrors)
+                            if (_settings.Current.General.VerboseErrors)
                                 await _dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
                         }
                     }
@@ -426,7 +426,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             catch (Exception ex)
             {
                 await _dialogs.ShowErrorAsync(Loc.Get("search.videos_failed"), Loc.Get("search.videos_failed_message", ex.Message));
-                if (_settings.Current.VerboseErrors)
+                if (_settings.Current.General.VerboseErrors)
                     await _dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
 
                 return false;
@@ -496,7 +496,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             catch (Exception ex)
             {
                 await _dialogs.ShowErrorAsync(Loc.Get("search.clips_failed"), Loc.Get("search.clips_failed_message", ex.Message));
-                if (_settings.Current.VerboseErrors)
+                if (_settings.Current.General.VerboseErrors)
                     await _dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
 
                 return false;
@@ -566,7 +566,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             {
                 Id = id,
                 Title = title,
-                Time = _settings.Current.UtcVideoTime ? createdAt : createdAt.ToLocalTime(),
+                Time = _settings.Current.General.UtcVideoTime ? createdAt : createdAt.ToLocalTime(),
                 Length = length,
                 Views = views,
                 Game = game ?? Loc.Get("common.unknown_game"),
@@ -666,7 +666,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _suppressSearch = true;
             SelectedSuggestion = null;
             ChannelQuery = string.Empty;
-            _settings.Current.RecentChannels.Clear();
+            _settings.Current.Queue.RecentChannels.Clear();
             _settings.Save();
             _currentChannel = null;
             RefreshChannelSuggestions();
@@ -683,7 +683,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (string.IsNullOrWhiteSpace(login))
                 return;
 
-            var recent = _settings.Current.RecentChannels;
+            var recent = _settings.Current.Queue.RecentChannels;
             recent.RemoveAll(channel => string.Equals(channel, login, StringComparison.OrdinalIgnoreCase));
             recent.Insert(0, login);
             while (recent.Count > 15)
@@ -699,7 +699,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             var suppress = _suppressSearch;
             _suppressSearch = true;
             ChannelSuggestions.Clear();
-            foreach (var channel in _settings.Current.RecentChannels)
+            foreach (var channel in _settings.Current.Queue.RecentChannels)
                 ChannelSuggestions.Add(channel);
 
             if (ChannelSuggestions.Count > 0)

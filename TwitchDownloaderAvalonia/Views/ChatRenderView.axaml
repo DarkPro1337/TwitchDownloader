@@ -143,20 +143,24 @@
                                 Orientation="Horizontal"
                                 Spacing="3"
                                 VerticalAlignment="Center">
-                                <NumericUpDown Classes="time" Minimum="0" Maximum="{Binding TrimHourMaximum}" FormatString="00" Increment="1"
-                                               VerticalAlignment="Center"
-                                               IsEnabled="{Binding CanEditTrimStart}"
-                                               Value="{Binding StartHour, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                <NumericUpDown
+                                    Classes="time" Minimum="0" Maximum="{Binding TrimHourMaximum}" FormatString="00"
+                                    Increment="1"
+                                    VerticalAlignment="Center"
+                                    IsEnabled="{Binding CanEditTrimStart}"
+                                    Value="{Binding StartHour, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
                                 <TextBlock Classes="muted" Text=":" VerticalAlignment="Center" />
-                                <NumericUpDown Classes="time" Minimum="0" Maximum="59" FormatString="00" Increment="1"
-                                               VerticalAlignment="Center"
-                                               IsEnabled="{Binding CanEditTrimStart}"
-                                               Value="{Binding StartMinute, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                <NumericUpDown
+                                    Classes="time" Minimum="0" Maximum="59" FormatString="00" Increment="1"
+                                    VerticalAlignment="Center"
+                                    IsEnabled="{Binding CanEditTrimStart}"
+                                    Value="{Binding StartMinute, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
                                 <TextBlock Classes="muted" Text=":" VerticalAlignment="Center" />
-                                <NumericUpDown Classes="time" Minimum="0" Maximum="59" FormatString="00" Increment="1"
-                                               VerticalAlignment="Center"
-                                               IsEnabled="{Binding CanEditTrimStart}"
-                                               Value="{Binding StartSecond, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                <NumericUpDown
+                                    Classes="time" Minimum="0" Maximum="59" FormatString="00" Increment="1"
+                                    VerticalAlignment="Center"
+                                    IsEnabled="{Binding CanEditTrimStart}"
+                                    Value="{Binding StartSecond, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
                             </StackPanel>
                             <CheckBox
                                 Content="{loc:Translate Key=common.trim_start}"
@@ -171,20 +175,24 @@
                                 Orientation="Horizontal"
                                 Spacing="3"
                                 VerticalAlignment="Center">
-                                <NumericUpDown Classes="time" Minimum="0" Maximum="{Binding TrimHourMaximum}" FormatString="00" Increment="1"
-                                               VerticalAlignment="Center"
-                                               IsEnabled="{Binding CanEditTrimEnd}"
-                                               Value="{Binding EndHour, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                <NumericUpDown
+                                    Classes="time" Minimum="0" Maximum="{Binding TrimHourMaximum}" FormatString="00"
+                                    Increment="1"
+                                    VerticalAlignment="Center"
+                                    IsEnabled="{Binding CanEditTrimEnd}"
+                                    Value="{Binding EndHour, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
                                 <TextBlock Classes="muted" Text=":" VerticalAlignment="Center" />
-                                <NumericUpDown Classes="time" Minimum="0" Maximum="59" FormatString="00" Increment="1"
-                                               VerticalAlignment="Center"
-                                               IsEnabled="{Binding CanEditTrimEnd}"
-                                               Value="{Binding EndMinute, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                <NumericUpDown
+                                    Classes="time" Minimum="0" Maximum="59" FormatString="00" Increment="1"
+                                    VerticalAlignment="Center"
+                                    IsEnabled="{Binding CanEditTrimEnd}"
+                                    Value="{Binding EndMinute, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
                                 <TextBlock Classes="muted" Text=":" VerticalAlignment="Center" />
-                                <NumericUpDown Classes="time" Minimum="0" Maximum="59" FormatString="00" Increment="1"
-                                               VerticalAlignment="Center"
-                                               IsEnabled="{Binding CanEditTrimEnd}"
-                                               Value="{Binding EndSecond, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                <NumericUpDown
+                                    Classes="time" Minimum="0" Maximum="59" FormatString="00" Increment="1"
+                                    VerticalAlignment="Center"
+                                    IsEnabled="{Binding CanEditTrimEnd}"
+                                    Value="{Binding EndSecond, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
                             </StackPanel>
                             <CheckBox
                                 Content="{loc:Translate Key=common.trim_end}"
@@ -230,7 +238,7 @@
                                             Minimum="2"
                                             Increment="2"
                                             FormatString="0"
-                                            Value="{Binding ChatWidth, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                            Value="{Binding ChatWidth, Converter={x:Static c:IntDecimalConverter.Instance}}" />
 
                                         <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="{loc:Translate Key=render.height}" VerticalAlignment="Center" Margin="0" />
                                         <NumericUpDown
@@ -240,7 +248,7 @@
                                             Minimum="2"
                                             Increment="2"
                                             FormatString="0"
-                                            Value="{Binding ChatHeight, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                            Value="{Binding ChatHeight, Converter={x:Static c:IntDecimalConverter.Instance}}" />
 
                                         <TextBlock Grid.Row="2" Grid.Column="0" Classes="label" Text="{loc:Translate Key=render.font}" VerticalAlignment="Center" Margin="0" />
                                         <ComboBox
@@ -257,7 +265,7 @@
                                             Minimum="1"
                                             Increment="1"
                                             FormatString="0"
-                                            Value="{Binding FontSize, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding FontSize, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
 
                                         <TextBlock Grid.Row="4" Grid.Column="0" Classes="label" Text="{loc:Translate Key=render.font_color}" VerticalAlignment="Center" Margin="0" />
                                         <Grid Grid.Row="4" Grid.Column="1" ColumnDefinitions="*,8,Auto">
@@ -313,7 +321,7 @@
                                             Minimum="0"
                                             Increment="0.1"
                                             FormatString="0.##"
-                                            Value="{Binding UpdateRate, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding UpdateRate, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </DockPanel>
 
                                     <StackPanel Spacing="10">
@@ -396,31 +404,31 @@
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_emote}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding EmoteScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding EmoteScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_badge}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding BadgeScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding BadgeScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_emoji}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding EmojiScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding EmojiScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_avatar}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding AvatarScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding AvatarScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_outline}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding OutlineScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding OutlineScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock
@@ -428,49 +436,49 @@
                                             ToolTip.Tip="{loc:Translate Key=render.scale_username_tip}" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding UsernameFontScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding UsernameFontScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_vertical}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding VerticalSpacingScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding VerticalSpacingScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_section}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding SectionHeightScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding SectionHeightScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_word}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding WordSpacingScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding WordSpacingScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_emote_spacing}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding EmoteSpacingScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding EmoteSpacingScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_stroke}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding AccentStrokeScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding AccentStrokeScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_indent}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding AccentIndentScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding AccentIndentScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                     <Grid Classes="scaleRow" ColumnDefinitions="*,8,Auto">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.scale_padding}" VerticalAlignment="Center" Margin="0" TextWrapping="Wrap" />
                                         <NumericUpDown
                                             Grid.Row="0" Grid.Column="2" Classes="compact" Minimum="0.1" Increment="0.1" FormatString="0.##"
-                                            Value="{Binding SidePaddingScale, Converter={x:Static c:DoubleDecimalConverter.Instance}, TargetNullValue={x:Static c:DoubleDecimalConverter.Zero}, FallbackValue={x:Static c:DoubleDecimalConverter.Zero}}" />
+                                            Value="{Binding SidePaddingScale, Converter={x:Static c:DoubleDecimalConverter.Instance}}" />
                                     </Grid>
                                 </WrapPanel>
                             </ScrollViewer>
@@ -502,7 +510,7 @@
                                             Minimum="1"
                                             Increment="1"
                                             FormatString="0"
-                                            Value="{Binding Framerate, Converter={x:Static c:IntDecimalConverter.Instance}, TargetNullValue={x:Static c:IntDecimalConverter.Zero}, FallbackValue={x:Static c:IntDecimalConverter.Zero}}" />
+                                            Value="{Binding Framerate, Converter={x:Static c:IntDecimalConverter.Instance}}" />
 
                                         <CheckBox
                                             Grid.Row="3"

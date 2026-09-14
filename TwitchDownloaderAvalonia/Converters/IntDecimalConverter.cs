@@ -20,7 +20,6 @@ namespace TwitchDownloaderAvalonia.Converters
         {
             return value switch
             {
-                null => 0,
                 decimal number => (int)decimal.Truncate(number),
                 int number => number,
                 _ => BindingOperations.DoNothing,

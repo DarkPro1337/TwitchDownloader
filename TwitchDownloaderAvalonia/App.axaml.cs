@@ -23,7 +23,7 @@ namespace TwitchDownloaderAvalonia
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var settings = new SettingsService();
-                LocalizationService.Current.SetCulture(settings.Current.GuiCulture);
+                LocalizationService.Current.SetCulture(settings.Current.Ui.Culture);
                 var themeStartup = ThemeService.Initialize(settings);
                 var status = new AppStatus(settings);
                 var ffmpeg = new FfmpegService();
