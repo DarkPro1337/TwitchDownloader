@@ -6,18 +6,20 @@ namespace TwitchDownloaderAvalonia.Services
     public sealed partial class QueueService : ObservableObject
     {
         private readonly SettingsService _settings;
+        private readonly LocalizationService _loc;
         private readonly AppStatus _status;
-        private readonly DialogService _dialogs;
+        private readonly IDialogService _dialogs;
         private bool _pumpQueued;
 
-        public QueueService(SettingsService settings, AppStatus status, DialogService dialogs)
+        public QueueService(LocalizationService loc, SettingsService settings, AppStatus status, IDialogService dialogs)
         {
+            _loc = loc;
             _settings = settings;
             _status = status;
             _dialogs = dialogs;
 
             Items.CollectionChanged += OnItemsChanged;
-            LocalizationService.Current.CultureChanged += OnCultureChanged;
+            _loc.CultureChanged += OnCultureChanged;
         }
 
         public ObservableCollection<QueueItemViewModel> Items { get; } = [];
@@ -108,35 +110,35 @@ namespace TwitchDownloaderAvalonia.Services
 
         public QueueItemViewModel EnqueueVod(VideoDownloadOptions options, string title, byte[]? thumbnail)
         {
-            var item = QueueItemViewModel.CreateVod(options, title, thumbnail, LogLevel);
+            var item = QueueItemViewModel.CreateVod(_loc, options, title, thumbnail, LogLevel);
             Enqueue(item);
             return item;
         }
 
         public QueueItemViewModel EnqueueClip(ClipDownloadOptions options, string title, byte[]? thumbnail)
         {
-            var item = QueueItemViewModel.CreateClip(options, title, thumbnail, LogLevel);
+            var item = QueueItemViewModel.CreateClip(_loc, options, title, thumbnail, LogLevel);
             Enqueue(item);
             return item;
         }
 
         public QueueItemViewModel EnqueueChat(ChatDownloadOptions options, string title, byte[]? thumbnail, QueueItemViewModel? dependant = null)
         {
-            var item = QueueItemViewModel.CreateChat(options, title, thumbnail, LogLevel, dependant);
+            var item = QueueItemViewModel.CreateChat(_loc, options, title, thumbnail, LogLevel, dependant);
             Enqueue(item);
             return item;
         }
 
         public QueueItemViewModel EnqueueChatUpdate(ChatUpdateOptions options, string title, byte[]? thumbnail)
         {
-            var item = QueueItemViewModel.CreateChatUpdate(options, title, thumbnail, LogLevel);
+            var item = QueueItemViewModel.CreateChatUpdate(_loc, options, title, thumbnail, LogLevel);
             Enqueue(item);
             return item;
         }
 
         public QueueItemViewModel EnqueueChatRender(ChatRenderOptions options, string title, byte[]? thumbnail, QueueItemViewModel? dependant = null)
         {
-            var item = QueueItemViewModel.CreateChatRender(options, title, thumbnail, LogLevel, dependant);
+            var item = QueueItemViewModel.CreateChatRender(_loc, options, title, thumbnail, LogLevel, dependant);
             Enqueue(item);
             return item;
         }
@@ -335,7 +337,7 @@ namespace TwitchDownloaderAvalonia.Services
             var stopping = Items.FirstOrDefault(item => item.Status == QueueItemStatus.Stopping);
             if (stopping is not null)
             {
-                _status.Set(AppStatusKind.Canceling, Loc.Get("status.task_running", stopping.Title, stopping.DisplayStatus), stopping.Progress, stopping.ThumbnailBytes);
+                _status.Set(AppStatusKind.Canceling, _loc.Get("status.task_running", stopping.Title, stopping.DisplayStatus), stopping.Progress, stopping.ThumbnailBytes);
                 return;
             }
 
@@ -344,8 +346,8 @@ namespace TwitchDownloaderAvalonia.Services
             {
                 var extra = Items.Count(item => item.Status == QueueItemStatus.Running);
                 var message = extra > 1
-                    ? Loc.Get("status.task_running_extra", running.Title, running.DisplayStatus, extra - 1)
-                    : Loc.Get("status.task_running", running.Title, running.DisplayStatus);
+                    ? _loc.Get("status.task_running_extra", running.Title, running.DisplayStatus, extra - 1)
+                    : _loc.Get("status.task_running", running.Title, running.DisplayStatus);
 
                 _status.Set(AppStatusKind.Running, message, running.Progress, running.ThumbnailBytes);
                 return;
@@ -354,18 +356,18 @@ namespace TwitchDownloaderAvalonia.Services
             var waiting = Items.FirstOrDefault(item => item.Status is QueueItemStatus.Waiting or QueueItemStatus.Ready);
             if (unfinished > 0)
             {
-                _status.Set(AppStatusKind.Idle, Loc.Get("status.waiting_in_queue", unfinished), 0, waiting?.ThumbnailBytes);
+                _status.Set(AppStatusKind.Idle, _loc.Get("status.waiting_in_queue", unfinished), 0, waiting?.ThumbnailBytes);
                 return;
             }
 
             var failed = Items.LastOrDefault(item => item.Status == QueueItemStatus.Failed);
             if (failed is not null)
             {
-                _status.Set(AppStatusKind.Error, Loc.Get("status.task_failed", failed.Title), 0, failed.ThumbnailBytes);
+                _status.Set(AppStatusKind.Error, _loc.Get("status.task_failed", failed.Title), 0, failed.ThumbnailBytes);
                 return;
             }
 
-            _status.Set(AppStatusKind.Idle, Loc.Get("status.idle"), 0);
+            _status.Set(AppStatusKind.Idle, _loc.Get("status.idle"), 0);
         }
     }
 }

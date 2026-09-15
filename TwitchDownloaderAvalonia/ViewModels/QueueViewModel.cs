@@ -1,11 +1,12 @@
 namespace TwitchDownloaderAvalonia.ViewModels
 {
     public sealed partial class QueueViewModel(
+        LocalizationService loc,
         AppStatus status,
         QueueService queue,
-        DialogService dialogs,
+        IDialogService dialogs,
         ThumbnailService thumbnails,
-        QueueEnqueueService enqueue) : ViewModelBase
+        QueueEnqueueService enqueue) : ViewModelBase(loc)
     {
         public AppStatus AppStatus { get; } = status;
         public QueueService Queue { get; } = queue;

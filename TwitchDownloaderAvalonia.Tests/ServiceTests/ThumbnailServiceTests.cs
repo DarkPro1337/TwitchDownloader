@@ -1,5 +1,6 @@
 using System.Net;
 using TwitchDownloaderAvalonia.Services;
+using TwitchDownloaderAvalonia.Tests.Fakes;
 
 namespace TwitchDownloaderAvalonia.Tests.ServiceTests
 {
@@ -12,8 +13,8 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             {
                 Content = new ByteArrayContent(new byte[ThumbnailService.MAX_BYTES + 1]),
             });
-            var service = new ThumbnailService(new HttpClient(handler));
 
+            var service = new ThumbnailService(new FakeHttpClientFactory(handler));
             var bytes = await service.TryGetAsync("https://example.com/thumb.jpg", TestContext.Current.CancellationToken);
 
             Assert.Null(bytes);

@@ -62,8 +62,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         private readonly SettingsService _settings;
         private readonly FfmpegService _ffmpeg;
-        private readonly DialogService _dialogs;
-        private readonly FileDialogService _fileDialogs;
+        private readonly IDialogService _dialogs;
+        private readonly IFileDialogService _fileDialogs;
         private readonly FileCollisionService _collision;
         private readonly ThumbnailService _thumbnails;
         private readonly QueueService _queue;
@@ -89,14 +89,15 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private bool _hasCreatedAt;
 
         public ChatRenderViewModel(
+            LocalizationService loc,
             SettingsService settings,
             AppStatus appStatus,
             FfmpegService ffmpeg,
-            DialogService dialogs,
-            FileDialogService fileDialogs,
+            IDialogService dialogs,
+            IFileDialogService fileDialogs,
             FileCollisionService collision,
             ThumbnailService thumbnails,
-            QueueService queue)
+            QueueService queue) : base(loc)
         {
             _settings = settings;
             AppStatus = appStatus;
@@ -766,7 +767,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         private ChatRenderOptions BuildOptions(string outputFile)
         {
-            return ChatRenderOptionsFactory.Create(new ChatRenderBuildArgs
+            return ChatRenderOptionsFactory.Create(Loc, new ChatRenderBuildArgs
             {
                 InputFile = InputFile,
                 OutputFile = outputFile,

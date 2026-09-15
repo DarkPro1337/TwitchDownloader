@@ -5,30 +5,32 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private readonly FfmpegService _ffmpeg;
 
         public MainWindowViewModel(
+            LocalizationService loc,
+            ThemeService themes,
             SettingsService settings,
             AppStatus status,
             FfmpegService ffmpeg,
-            DialogService dialogs,
-            FileDialogService fileDialogs,
+            IDialogService dialogs,
+            IFileDialogService fileDialogs,
             FileCollisionService collision,
             AbandonedVideoCacheService cacheCleaner,
             ThumbnailService thumbnails,
             QueueService queue,
-            UpdateCheckService updates)
+            UpdateCheckService updates,
+            QueueEnqueueService enqueue) : base(loc)
         {
             _ffmpeg = ffmpeg;
             Status = status;
 
-            var enqueue = new QueueEnqueueService(settings, dialogs, queue, ffmpeg, collision, cacheCleaner);
-            Vod = new VodDownloadViewModel(settings, status, ffmpeg, dialogs, fileDialogs, collision, cacheCleaner, thumbnails, queue);
-            Clip = new ClipDownloadViewModel(settings, status, ffmpeg, dialogs, fileDialogs, collision, thumbnails, queue);
-            ChatDownload = new ChatDownloadViewModel(settings, status, dialogs, fileDialogs, collision, thumbnails, queue);
-            ChatUpdate = new ChatUpdateViewModel(settings, status, dialogs, fileDialogs, collision, thumbnails, queue);
-            ChatRender = new ChatRenderViewModel(settings, status, ffmpeg, dialogs, fileDialogs, collision, thumbnails, queue);
-            Search = new SearchViewModel(settings, status, dialogs, thumbnails, OpenSearchResultAsync, enqueue);
-            Queue = new QueueViewModel(status, queue, dialogs, thumbnails, enqueue);
-            SettingsPage = new SettingsViewModel(settings, status, fileDialogs, dialogs, collision, queue);
-            About = new AboutViewModel(updates, dialogs, ffmpeg);
+            Vod = new VodDownloadViewModel(loc, settings, status, ffmpeg, dialogs, fileDialogs, collision, cacheCleaner, thumbnails, queue);
+            Clip = new ClipDownloadViewModel(loc, settings, status, ffmpeg, dialogs, fileDialogs, collision, thumbnails, queue);
+            ChatDownload = new ChatDownloadViewModel(loc, settings, status, dialogs, fileDialogs, collision, thumbnails, queue);
+            ChatUpdate = new ChatUpdateViewModel(loc, settings, status, dialogs, fileDialogs, collision, thumbnails, queue);
+            ChatRender = new ChatRenderViewModel(loc, settings, status, ffmpeg, dialogs, fileDialogs, collision, thumbnails, queue);
+            Search = new SearchViewModel(loc, settings, status, dialogs, thumbnails, OpenSearchResultAsync, enqueue);
+            Queue = new QueueViewModel(loc, status, queue, dialogs, thumbnails, enqueue);
+            SettingsPage = new SettingsViewModel(loc, themes, settings, status, fileDialogs, dialogs, collision, queue);
+            About = new AboutViewModel(loc, updates, dialogs, ffmpeg);
 
             CurrentPage = Vod;
             RefreshWindowTitle();
@@ -160,6 +162,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             var previousKind = Status.Kind;
             var previousMessage = Status.Message;
             var progress = new AvaloniaTaskProgress(
+                Loc,
                 LogLevel.Info | LogLevel.Error,
                 percent => Status.Progress = percent,
                 status =>

@@ -1,10 +1,11 @@
 namespace TwitchDownloaderAvalonia.ViewModels
 {
     public sealed partial class CollisionDialogViewModel(
+        LocalizationService loc,
         string fileName,
         string fullPath,
         Action<CollisionPromptResult> close)
-        : ViewModelBase
+        : ViewModelBase(loc)
     {
         public string HeaderText => Loc.Get("dialogs.collision_header", fileName);
         public string FullPath { get; } = fullPath;

@@ -1,8 +1,9 @@
 namespace TwitchDownloaderAvalonia.Services
 {
     public sealed class QueueEnqueueService(
+        LocalizationService loc,
         SettingsService settings,
-        DialogService dialogs,
+        IDialogService dialogs,
         QueueService queue,
         FfmpegService ffmpeg,
         FileCollisionService collision,
@@ -26,9 +27,9 @@ namespace TwitchDownloaderAvalonia.Services
             }
             catch (Exception ex)
             {
-                await dialogs.ShowErrorAsync(Loc.Get("search.invalid_folder_title"), Loc.Get("search.invalid_folder"));
+                await dialogs.ShowErrorAsync(loc.Get("search.invalid_folder_title"), loc.Get("search.invalid_folder"));
                 if (settings.Current.General.VerboseErrors)
-                    await dialogs.ShowErrorAsync(Loc.Get("dialogs.verbose_error"), ex.ToString());
+                    await dialogs.ShowErrorAsync(loc.Get("dialogs.verbose_error"), ex.ToString());
 
                 return false;
             }
@@ -36,6 +37,7 @@ namespace TwitchDownloaderAvalonia.Services
             var tasks = MassEnqueuePlanner.Build(items, options, new MassEnqueueContext
             {
                 Settings = settings.Current,
+                Localization = loc,
                 FfmpegPath = ffmpeg.ResolvedPath,
                 CollisionCallback = file => collision.HandleCollision(file)!,
                 CacheCleanerCallback = cacheCleaner.Handle,

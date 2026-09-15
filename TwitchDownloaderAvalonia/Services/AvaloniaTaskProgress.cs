@@ -5,6 +5,7 @@ using TwitchDownloaderCore.Interfaces;
 namespace TwitchDownloaderAvalonia.Services
 {
     public sealed class AvaloniaTaskProgress(
+        LocalizationService loc,
         LogLevel logLevel,
         Action<int> handlePercent,
         Action<string> handleStatus,
@@ -131,13 +132,13 @@ namespace TwitchDownloaderAvalonia.Services
         public void LogError(string logMessage)
         {
             if ((logLevel & LogLevel.Error) == 0) return;
-            PostLog(Loc.Error(logMessage));
+            PostLog(loc.Error(logMessage));
         }
 
         public void LogError(DefaultInterpolatedStringHandler logMessage)
         {
             if ((logLevel & LogLevel.Error) == 0) return;
-            PostLog(Loc.Error(logMessage.ToStringAndClear()));
+            PostLog(loc.Error(logMessage.ToStringAndClear()));
         }
 
         public void LogFfmpeg(string logMessage)

@@ -1,27 +1,19 @@
 using System.Xml;
+using TwitchDownloaderAvalonia.DependencyInjection;
 using TwitchDownloaderCore.Extensions;
 
 namespace TwitchDownloaderAvalonia.Services
 {
     public sealed record UpdateCheckResult(Version RemoteVersion, bool IsNewer, string ChangelogUrl);
 
-    public sealed class UpdateCheckService
+    public sealed class UpdateCheckService(IHttpClientFactory httpClientFactory)
     {
         public const string FEED_URL = "https://downloader-update.twitcharchives.workers.dev/";
         public const string DEFAULT_CHANGELOG_URL = "https://github.com/lay295/TwitchDownloader/releases";
 
-        private readonly HttpClient _httpClient;
         private readonly SemaphoreSlim _gate = new(1, 1);
         private UpdateCheckResult? _cached;
         private bool _completed;
-
-        public UpdateCheckService() : this(CreateClient()) { }
-
-        internal UpdateCheckService(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "TwitchDownloader");
-        }
 
         public async Task<UpdateCheckResult?> CheckAsync(Version localVersion, CancellationToken cancellationToken = default)
         {
@@ -53,7 +45,8 @@ namespace TwitchDownloaderAvalonia.Services
         {
             try
             {
-                var xml = await _httpClient.GetStringAsync(FEED_URL, cancellationToken);
+                using var httpClient = httpClientFactory.CreateClient(HttpClientNames.Updates);
+                var xml = await httpClient.GetStringAsync(FEED_URL, cancellationToken);
                 if (string.IsNullOrWhiteSpace(xml))
                     return null;
 
@@ -75,14 +68,6 @@ namespace TwitchDownloaderAvalonia.Services
             {
                 return null;
             }
-        }
-
-        private static HttpClient CreateClient()
-        {
-            return new HttpClient
-            {
-                Timeout = TimeSpan.FromSeconds(15),
-            };
         }
     }
 }

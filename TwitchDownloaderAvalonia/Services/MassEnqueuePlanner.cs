@@ -5,6 +5,7 @@ namespace TwitchDownloaderAvalonia.Services
     internal sealed class MassEnqueueContext
     {
         public required AppSettings Settings { get; init; }
+        public required LocalizationService Localization { get; init; }
         public required string FfmpegPath { get; init; }
         public required Func<FileInfo, FileInfo> CollisionCallback { get; init; }
         public required Func<DirectoryInfo[], DirectoryInfo[]> CacheCleanerCallback { get; init; }
@@ -33,7 +34,9 @@ namespace TwitchDownloaderAvalonia.Services
                 ? ChatCompression.Gzip
                 : ChatCompression.None;
 
-            var container = renderChat ? ChatRenderOptionsFactory.ContainerExtension(settings) : string.Empty;
+            var container = renderChat
+                ? ChatRenderOptionsFactory.ContainerExtension(settings)
+                : string.Empty;
 
             foreach (var item in items)
             {
@@ -68,7 +71,7 @@ namespace TwitchDownloaderAvalonia.Services
                         };
 
                         videoFilename = clipOptions.Filename;
-                        tasks.Add(QueueItemViewModel.CreateClip(clipOptions, item.Title, item.ThumbnailBytes, context.LogLevel));
+                        tasks.Add(QueueItemViewModel.CreateClip(context.Localization, clipOptions, item.Title, item.ThumbnailBytes, context.LogLevel));
                     }
                     else if (long.TryParse(item.Id, out var videoId))
                     {
@@ -102,7 +105,7 @@ namespace TwitchDownloaderAvalonia.Services
                             item.Game) + FilenameService.GuessVodFileExtension(vodOptions.Quality));
 
                         videoFilename = vodOptions.Filename;
-                        tasks.Add(QueueItemViewModel.CreateVod(vodOptions, item.Title, item.ThumbnailBytes, context.LogLevel));
+                        tasks.Add(QueueItemViewModel.CreateVod(context.Localization, vodOptions, item.Title, item.ThumbnailBytes, context.LogLevel));
                     }
                 }
 
@@ -142,7 +145,7 @@ namespace TwitchDownloaderAvalonia.Services
                     NullIfEmpty(item.ClipperName),
                     NullIfEmpty(item.ClipperId)) + chatOptions.FileExtension);
 
-                var chatItem = QueueItemViewModel.CreateChat(chatOptions, item.Title, item.ThumbnailBytes, context.LogLevel);
+                var chatItem = QueueItemViewModel.CreateChat(context.Localization, chatOptions, item.Title, item.ThumbnailBytes, context.LogLevel);
                 tasks.Add(chatItem);
 
                 if (!renderChat)
@@ -150,6 +153,7 @@ namespace TwitchDownloaderAvalonia.Services
 
                 var renderOutput = MassEnqueuePaths.ChatRenderOutput(chatOptions.Filename, videoFilename, container);
                 var renderOptions = ChatRenderOptionsFactory.FromSettings(
+                    context.Localization,
                     settings,
                     chatOptions.Filename,
                     renderOutput,
@@ -157,6 +161,7 @@ namespace TwitchDownloaderAvalonia.Services
                     context.CollisionCallback);
 
                 tasks.Add(QueueItemViewModel.CreateChatRender(
+                    context.Localization,
                     renderOptions,
                     item.Title,
                     item.ThumbnailBytes,

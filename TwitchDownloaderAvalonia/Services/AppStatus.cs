@@ -2,12 +2,15 @@ namespace TwitchDownloaderAvalonia.Services
 {
     public sealed partial class AppStatus : ObservableObject
     {
-        public AppStatus(SettingsService settings)
-        {
-            ReduceMotion = settings.Current.Ui.ReduceMotion;
-            Message = Loc.Get("status.idle");
+        private readonly LocalizationService _loc;
 
-            LocalizationService.Current.CultureChanged += OnCultureChanged;
+        public AppStatus(LocalizationService loc, SettingsService settings)
+        {
+            _loc = loc;
+            ReduceMotion = settings.Current.Ui.ReduceMotion;
+            Message = _loc.Get("status.idle");
+
+            _loc.CultureChanged += OnCultureChanged;
         }
 
         [ObservableProperty]
@@ -82,13 +85,13 @@ namespace TwitchDownloaderAvalonia.Services
                 PreviewBytes = preview;
         }
 
-        public string QueueChipText => Loc.Get("status.queue_chip", QueueCount);
+        public string QueueChipText => _loc.Get("status.queue_chip", QueueCount);
 
         private void OnCultureChanged(object? sender, EventArgs e)
         {
             OnPropertyChanged(nameof(QueueChipText));
             if (Kind == AppStatusKind.Idle && QueueCount == 0)
-                Message = Loc.Get("status.idle");
+                Message = _loc.Get("status.idle");
         }
     }
 }

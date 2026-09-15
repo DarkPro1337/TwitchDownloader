@@ -2,10 +2,13 @@ namespace TwitchDownloaderAvalonia.Models
 {
     public sealed partial class SearchResultItem : ObservableObject
     {
-        public SearchResultItem()
+        public SearchResultItem(LocalizationService loc)
         {
-            LocalizationService.Current.CultureChanged += OnCultureChanged;
+            Loc = loc;
+            Loc.CultureChanged += OnCultureChanged;
         }
+
+        public LocalizationService Loc { get; }
 
         public required string Id { get; init; }
         public required string Title { get; init; }
@@ -79,11 +82,12 @@ namespace TwitchDownloaderAvalonia.Models
 
         public void Detach()
         {
-            LocalizationService.Current.CultureChanged -= OnCultureChanged;
+            Loc.CultureChanged -= OnCultureChanged;
         }
 
         private void OnCultureChanged(object? sender, EventArgs e)
         {
+            OnPropertyChanged(nameof(Loc));
             OnPropertyChanged(nameof(DurationText));
             OnPropertyChanged(nameof(ViewsText));
             OnPropertyChanged(nameof(HeaderText));

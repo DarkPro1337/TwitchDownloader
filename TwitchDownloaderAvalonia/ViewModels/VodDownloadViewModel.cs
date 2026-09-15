@@ -4,8 +4,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
     {
         private readonly SettingsService _settings;
         private readonly FfmpegService _ffmpeg;
-        private readonly DialogService _dialogs;
-        private readonly FileDialogService _fileDialogs;
+        private readonly IDialogService _dialogs;
+        private readonly IFileDialogService _fileDialogs;
         private readonly FileCollisionService _collision;
         private readonly AbandonedVideoCacheService _cacheCleaner;
         private readonly ThumbnailService _thumbnails;
@@ -25,15 +25,16 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private string _videoTitle = string.Empty;
 
         public VodDownloadViewModel(
+            LocalizationService loc,
             SettingsService settings,
             AppStatus appStatus,
             FfmpegService ffmpeg,
-            DialogService dialogs,
-            FileDialogService fileDialogs,
+            IDialogService dialogs,
+            IFileDialogService fileDialogs,
             FileCollisionService collision,
             AbandonedVideoCacheService cacheCleaner,
             ThumbnailService thumbnails,
-            QueueService queue)
+            QueueService queue) : base(loc)
         {
             _settings = settings;
             AppStatus = appStatus;
@@ -397,7 +398,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             foreach (var item in Qualities)
             {
                 var sizeInBytes = VideoSizeEstimator.EstimateVideoSize(item.Quality.BitRate, trimStart, trimEnd);
-                item.DisplayName = QualityLabels.WithSize(item.Quality.Name, sizeInBytes);
+                item.DisplayName = QualityLabels.WithSize(Loc, item.Quality.Name, sizeInBytes);
             }
         }
 

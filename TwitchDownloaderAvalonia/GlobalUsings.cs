@@ -12,6 +12,7 @@ global using Avalonia.Data.Converters;
 global using Avalonia.Threading;
 global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;
+global using TwitchDownloaderAvalonia.Abstractions;
 global using TwitchDownloaderAvalonia.Converters;
 global using TwitchDownloaderAvalonia.Models;
 global using TwitchDownloaderAvalonia.Services;

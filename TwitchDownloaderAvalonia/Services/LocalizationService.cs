@@ -1,4 +1,5 @@
 using Avalonia.Platform;
+using Microsoft.Extensions.Logging;
 using Tomlyn;
 using Tomlyn.Model;
 
@@ -7,14 +8,14 @@ namespace TwitchDownloaderAvalonia.Services
     public sealed class LocalizationService : INotifyPropertyChanged
     {
         public const string DEFAULT_CULTURE = "en-US";
-
-        public static LocalizationService Current { get; } = new();
-
+    
+        private readonly ILogger<LocalizationService> _logger;
         private readonly Dictionary<string, string> _fallback;
         private Dictionary<string, string> _current;
 
-        private LocalizationService()
+        public LocalizationService(ILogger<LocalizationService> logger)
         {
+            _logger = logger;
             _fallback = Load(DEFAULT_CULTURE) ?? new Dictionary<string, string>(StringComparer.Ordinal);
             _current = _fallback;
             Culture = DEFAULT_CULTURE;
@@ -27,31 +28,36 @@ namespace TwitchDownloaderAvalonia.Services
 
         public string this[string key] => Get(key);
 
+        public string Error(string message) => Get("common.log_error_prefix") + message;
+
         public string Get(string key)
         {
             EnsureFallback();
             if (_current.TryGetValue(key, out var value) && value.Length > 0)
                 return value;
 
-            if (!ReferenceEquals(_current, _fallback)
-                && _fallback.TryGetValue(key, out value)
-                && value.Length > 0)
+            if (!ReferenceEquals(_current, _fallback) && _fallback.TryGetValue(key, out value) && value.Length > 0)
             {
-#if DEBUG
-                Debug.WriteLine($"[i18n] missing {Culture}: {key}");
-#endif
+                _logger.LogDebug("Missing {Culture} translation for {Key}", Culture, key);
                 return value;
             }
 
-#if DEBUG
-            Debug.WriteLine($"[i18n] missing key: {key}");
-#endif
+            _logger.LogDebug("Missing translation key {Key}", key);
             return key;
         }
 
         public string Get(string key, params object[] args)
         {
-            return Format(Get(key), key, args);
+            var template = Get(key);
+            try
+            {
+                return string.Format(CultureInfo.CurrentCulture, template, args);
+            }
+            catch (FormatException ex)
+            {
+                _logger.LogWarning(ex, "Failed to format translation {Key}", key);
+                return template;
+            }
         }
 
         internal static string Format(string template, string key, params object[] args)
@@ -60,9 +66,8 @@ namespace TwitchDownloaderAvalonia.Services
             {
                 return string.Format(CultureInfo.CurrentCulture, template, args);
             }
-            catch (FormatException ex)
+            catch (FormatException)
             {
-                Debug.WriteLine($"[i18n] format {key}: {ex.Message}");
                 return template;
             }
         }

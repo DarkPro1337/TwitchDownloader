@@ -1,4 +1,5 @@
 using Avalonia.Markup.Xaml;
+using TwitchDownloaderAvalonia.ViewModels;
 
 namespace TwitchDownloaderAvalonia.Markup
 {
@@ -8,9 +9,8 @@ namespace TwitchDownloaderAvalonia.Markup
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            return new Binding(nameof(LocalizationService.Culture))
+            return new Binding(nameof(ViewModelBase.Loc))
             {
-                Source = LocalizationService.Current,
                 Mode = BindingMode.OneWay,
                 Converter = TranslateConverter.Instance,
                 ConverterParameter = Key,
@@ -24,9 +24,9 @@ namespace TwitchDownloaderAvalonia.Markup
 
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            return parameter is string key
-                ? LocalizationService.Current.Get(key)
-                : AvaloniaProperty.UnsetValue;
+            return value is not LocalizationService loc || parameter is not string key
+                ? AvaloniaProperty.UnsetValue
+                : loc.Get(key);
         }
 
         public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

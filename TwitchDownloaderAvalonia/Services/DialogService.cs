@@ -1,10 +1,15 @@
 using Avalonia.Input.Platform;
+using Microsoft.Extensions.Logging;
 using TwitchDownloaderAvalonia.ViewModels;
 using TwitchDownloaderAvalonia.Views;
 
 namespace TwitchDownloaderAvalonia.Services
 {
-    public sealed class DialogService(SettingsService settings, FileDialogService files)
+    public sealed class DialogService(
+        LocalizationService loc,
+        SettingsService settings,
+        IFileDialogService files,
+        ILoggerFactory loggerFactory) : IDialogService
     {
         private Window? _owner;
 
@@ -89,7 +94,7 @@ namespace TwitchDownloaderAvalonia.Services
         private async Task ShowMessageCoreAsync(string title, string message)
         {
             var dialog = new MessageDialog();
-            dialog.DataContext = new MessageDialogViewModel(title, message, result => dialog.Close(result));
+            dialog.DataContext = new MessageDialogViewModel(loc, title, message, result => dialog.Close(result));
             await dialog.ShowDialog(_owner!);
         }
 
@@ -107,14 +112,14 @@ namespace TwitchDownloaderAvalonia.Services
         private async Task<bool> ShowConfirmCoreAsync(string title, string message)
         {
             var dialog = new MessageDialog();
-            dialog.DataContext = new MessageDialogViewModel(title, message, result => dialog.Close(result), showCancel: true);
+            dialog.DataContext = new MessageDialogViewModel(loc, title, message, result => dialog.Close(result), showCancel: true);
             return await dialog.ShowDialog<bool>(_owner!);
         }
 
         private async Task<CollisionPromptResult> ShowCollisionCoreAsync(string fileName, string fullPath)
         {
             var dialog = new CollisionDialog();
-            dialog.DataContext = new CollisionDialogViewModel(fileName, fullPath, promptResult => dialog.Close(promptResult));
+            dialog.DataContext = new CollisionDialogViewModel(loc, fileName, fullPath, promptResult => dialog.Close(promptResult));
             return await dialog.ShowDialog<CollisionPromptResult>(_owner!);
         }
 
@@ -132,7 +137,7 @@ namespace TwitchDownloaderAvalonia.Services
         private async Task<EnqueueOptions?> ShowEnqueueOptionsCoreAsync(bool hasVods, bool hasRecordingVods)
         {
             var dialog = new EnqueueOptionsDialog();
-            dialog.DataContext = new EnqueueOptionsViewModel(settings, files, hasVods, hasRecordingVods, dialog.Close);
+            dialog.DataContext = new EnqueueOptionsViewModel(loc, settings, files, hasVods, hasRecordingVods, dialog.Close);
             return await dialog.ShowDialog<EnqueueOptions?>(_owner!);
         }
 
@@ -153,7 +158,7 @@ namespace TwitchDownloaderAvalonia.Services
         private async Task ShowUrlListCoreAsync(ThumbnailService thumbnails, QueueEnqueueService enqueue)
         {
             var dialog = new UrlListDialog();
-            var viewModel = new UrlListViewModel(settings, this, thumbnails, enqueue, queued => dialog.Close(queued));
+            var viewModel = new UrlListViewModel(loc, settings, this, thumbnails, enqueue, queued => dialog.Close(queued));
             dialog.DataContext = viewModel;
             dialog.Closing += OnDialogClosing;
             await dialog.ShowDialog(_owner!);
@@ -165,9 +170,16 @@ namespace TwitchDownloaderAvalonia.Services
         private async Task<DirectoryInfo[]> ShowAbandonedVideoCachesCoreAsync(DirectoryInfo[] directories)
         {
             var dialog = new AbandonedVideoCacheDialog();
-            var viewModel = new AbandonedVideoCacheViewModel(directories, result => dialog.Close(result), this);
+            var viewModel = new AbandonedVideoCacheViewModel(
+                loc,
+                directories,
+                dialog.Close,
+                this,
+                loggerFactory.CreateLogger<AbandonedVideoCacheViewModel>());
+
             dialog.DataContext = viewModel;
             viewModel.StartSizeCalculation();
+
             try
             {
                 var result = await dialog.ShowDialog<DirectoryInfo[]?>(_owner!);

@@ -4,20 +4,24 @@ namespace TwitchDownloaderAvalonia.ViewModels
     {
         private readonly SettingsService _settings;
         private readonly AppStatus _status;
-        private readonly FileDialogService _files;
-        private readonly DialogService _dialogs;
+        private readonly IFileDialogService _files;
+        private readonly IDialogService _dialogs;
         private readonly FileCollisionService _collision;
+        private readonly ThemeService _themes;
         private static readonly StringComparer ThemeNames = StringComparer.OrdinalIgnoreCase;
         private bool _suppressSave;
 
         public SettingsViewModel(
+            LocalizationService loc,
+            ThemeService themes,
             SettingsService settings,
             AppStatus status,
-            FileDialogService files,
-            DialogService dialogs,
+            IFileDialogService files,
+            IDialogService dialogs,
             FileCollisionService collision,
-            QueueService queue)
+            QueueService queue) : base(loc)
         {
+            _themes = themes;
             _settings = settings;
             _status = status;
             _files = files;
@@ -104,7 +108,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial string QueueFolder { get; set; } = string.Empty;
 
         [ObservableProperty]
-        public partial string SelectedQuality { get; set; } = "Source";
+        public partial string SelectedQuality { get; set; } = QualityNames.SOURCE;
 
         public bool ShowDonateButton => !HideDonation;
 
@@ -172,28 +176,28 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 new LabeledOption("Cancel", Loc.Get("settings.collision_cancel")),
             ];
 
-            QualityOptions = [.. EnqueueOptionsViewModel.Qualities.Select(value => new LabeledOption(value, QualityLabels.Get(value)))];
+            QualityOptions = [.. EnqueueOptionsViewModel.Qualities.Select(value => new LabeledOption(value, QualityLabels.Get(Loc, value)))];
             FilenameParameters =
             [
-                new FilenameParameter("{title}", "settings.param_title"),
-                new FilenameParameter("{id}", "settings.param_id"),
-                new FilenameParameter("{date}", "settings.param_date"),
-                new FilenameParameter("{date_custom=\"\"}", "settings.param_date_custom"),
-                new FilenameParameter("{channel}", "settings.param_channel"),
-                new FilenameParameter("{channel_id}", "settings.param_channel_id"),
-                new FilenameParameter("{clipper}", "settings.param_clipper"),
-                new FilenameParameter("{clipper_id}", "settings.param_clipper_id"),
-                new FilenameParameter("{random_string}", "settings.param_random"),
-                new FilenameParameter("{trim_start}", "settings.param_trim_start"),
-                new FilenameParameter("{trim_start_custom=\"\"}", "settings.param_trim_start_custom"),
-                new FilenameParameter("{trim_end}", "settings.param_trim_end"),
-                new FilenameParameter("{trim_end_custom=\"\"}", "settings.param_trim_end_custom"),
-                new FilenameParameter("{trim_length}", "settings.param_trim_length"),
-                new FilenameParameter("{trim_length_custom=\"\"}", "settings.param_trim_length_custom"),
-                new FilenameParameter("{length}", "settings.param_length"),
-                new FilenameParameter("{length_custom=\"\"}", "settings.param_length_custom"),
-                new FilenameParameter("{views}", "settings.param_views"),
-                new FilenameParameter("{game}", "settings.param_game"),
+                new FilenameParameter(Loc, "{title}", "settings.param_title"),
+                new FilenameParameter(Loc, "{id}", "settings.param_id"),
+                new FilenameParameter(Loc, "{date}", "settings.param_date"),
+                new FilenameParameter(Loc, "{date_custom=\"\"}", "settings.param_date_custom"),
+                new FilenameParameter(Loc, "{channel}", "settings.param_channel"),
+                new FilenameParameter(Loc, "{channel_id}", "settings.param_channel_id"),
+                new FilenameParameter(Loc, "{clipper}", "settings.param_clipper"),
+                new FilenameParameter(Loc, "{clipper_id}", "settings.param_clipper_id"),
+                new FilenameParameter(Loc, "{random_string}", "settings.param_random"),
+                new FilenameParameter(Loc, "{trim_start}", "settings.param_trim_start"),
+                new FilenameParameter(Loc, "{trim_start_custom=\"\"}", "settings.param_trim_start_custom"),
+                new FilenameParameter(Loc, "{trim_end}", "settings.param_trim_end"),
+                new FilenameParameter(Loc, "{trim_end_custom=\"\"}", "settings.param_trim_end_custom"),
+                new FilenameParameter(Loc, "{trim_length}", "settings.param_trim_length"),
+                new FilenameParameter(Loc, "{trim_length_custom=\"\"}", "settings.param_trim_length_custom"),
+                new FilenameParameter(Loc, "{length}", "settings.param_length"),
+                new FilenameParameter(Loc, "{length_custom=\"\"}", "settings.param_length_custom"),
+                new FilenameParameter(Loc, "{views}", "settings.param_views"),
+                new FilenameParameter(Loc, "{game}", "settings.param_game"),
             ];
 
             OnPropertyChanged(nameof(ThemePickerItems));
@@ -219,14 +223,15 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 new(string.Empty, Loc.Get("settings.theme_light_themes"), IsHeader: true),
             };
 
-            foreach (var name in ThemeService.GetLightThemeOptions())
+            var options = _themes.GetThemeOptions();
+            foreach (var name in options.Light)
             {
                 items.Add(new ThemePickerItem(name, ThemeNames.Equals(name, ThemeService.LIGHT) ? Loc.Get("settings.theme_light_default") : name,
                     IsPreferred: ThemeNames.Equals(name, current.Ui.LightTheme)));
             }
 
             items.Add(new ThemePickerItem(string.Empty, Loc.Get("settings.theme_dark_themes"), IsHeader: true));
-            foreach (var name in ThemeService.GetDarkThemeOptions())
+            foreach (var name in options.Dark)
             {
                 items.Add(new ThemePickerItem(name, ThemeNames.Equals(name, ThemeService.DARK) ? Loc.Get("settings.theme_dark_default") : name,
                     IsDark: true,
@@ -315,8 +320,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _settings.ResetToDefaults();
             _collision.ResetSessionBehavior();
             LoadFromSettings();
-            LocalizationService.Current.SetCulture(SelectedCulture.Code);
-            ThemeService.Apply(_settings.Current);
+            Loc.SetCulture(SelectedCulture.Code);
+            _themes.Apply(_settings.Current);
             _status.ReduceMotion = ReduceMotion;
             Queue.NotifyLimitsChanged();
         }
@@ -331,7 +336,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
             _settings.Current.Ui.Culture = value.Code;
             _settings.Save();
-            LocalizationService.Current.SetCulture(value.Code);
+            Loc.SetCulture(value.Code);
         }
 
         partial void OnSelectedThemePickerItemChanged(ThemePickerItem? value)
@@ -363,7 +368,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             }
 
             _settings.Save();
-            ThemeService.Apply(_settings.Current);
+            _themes.Apply(_settings.Current);
 
             _suppressSave = true;
             ThemePickerItems = BuildThemePickerItems();

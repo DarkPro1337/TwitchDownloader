@@ -1,11 +1,17 @@
+using Microsoft.Extensions.Logging;
+
 namespace TwitchDownloaderAvalonia.ViewModels
 {
     public sealed partial class AbandonedVideoCacheItem(
+        LocalizationService loc,
         DirectoryInfo directory,
+        ILogger logger,
         Func<AbandonedVideoCacheItem, Task>? copyPath = null)
         : ObservableObject
     {
         private readonly Func<AbandonedVideoCacheItem, Task> _copyPath = copyPath ?? (_ => Task.CompletedTask);
+
+        public LocalizationService Loc { get; } = loc;
 
         public DirectoryInfo Directory { get; } = directory;
 
@@ -49,14 +55,18 @@ namespace TwitchDownloaderAvalonia.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[cache] open folder: {ex.Message}");
+                logger.LogWarning(ex, "Failed to open cache folder {Path}", Path);
             }
         }
 
         [RelayCommand]
         private Task CopyPathAsync() => _copyPath(this);
 
-        public void RefreshCulture() => OnPropertyChanged(nameof(AgeText));
+        public void RefreshCulture()
+        {
+            OnPropertyChanged(nameof(Loc));
+            OnPropertyChanged(nameof(AgeText));
+        }
 
         internal static string FormatSize(long sizeBytes)
         {
@@ -68,18 +78,22 @@ namespace TwitchDownloaderAvalonia.ViewModels
     public sealed partial class AbandonedVideoCacheViewModel : ViewModelBase
     {
         private readonly Action<DirectoryInfo[]> _close;
-        private readonly DialogService? _dialogs;
+        private readonly IDialogService _dialogs;
+        private readonly ILogger _logger;
 
         public AbandonedVideoCacheViewModel(
+            LocalizationService loc,
             IEnumerable<DirectoryInfo> directories,
             Action<DirectoryInfo[]> close,
-            DialogService? dialogs = null)
+            IDialogService dialogs,
+            ILogger logger) : base(loc)
         {
             _close = close;
             _dialogs = dialogs;
+            _logger = logger;
             Items =
             [
-                .. directories.Select(directory => new AbandonedVideoCacheItem(directory, CopyPathCore)),
+                .. directories.Select(directory => new AbandonedVideoCacheItem(Loc, directory, logger, CopyPathCore)),
             ];
         }
 
@@ -118,7 +132,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[cache] size {item.Path}: {ex.Message}");
+                    _logger.LogWarning(ex, "Failed to measure cache size for {Path}", item.Path);
                     item.SizeText = AbandonedVideoCacheItem.FormatSize(0);
                 }
 
@@ -153,9 +167,6 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         private async Task CopyPathCore(AbandonedVideoCacheItem item)
         {
-            if (_dialogs is null)
-                return;
-
             try
             {
                 await _dialogs.CopyTextAsync(item.Path);

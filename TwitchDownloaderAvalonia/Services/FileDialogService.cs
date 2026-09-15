@@ -2,7 +2,7 @@ using Avalonia.Platform.Storage;
 
 namespace TwitchDownloaderAvalonia.Services
 {
-    public sealed class FileDialogService
+    public sealed class FileDialogService(LocalizationService loc) : IFileDialogService
     {
         private Window? _owner;
 
@@ -20,7 +20,7 @@ namespace TwitchDownloaderAvalonia.Services
             var normalizedExtension = extension.TrimStart('.');
             var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title = Loc.Get("dialogs.save_file"),
+                Title = loc.Get("dialogs.save_file"),
                 SuggestedFileName = suggestedFileName,
                 DefaultExtension = normalizedExtension,
                 FileTypeChoices =

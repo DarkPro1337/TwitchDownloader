@@ -7,7 +7,7 @@ namespace TwitchDownloaderAvalonia.Services
         private readonly SemaphoreSlim _gate = new(1, 1);
         private CollisionBehavior? _sessionBehavior;
 
-        public FileCollisionService(SettingsService settings, DialogService dialogs) : this(settings, dialogs.PromptCollision) { }
+        public FileCollisionService(SettingsService settings, IDialogService dialogs) : this(settings, dialogs.PromptCollision) { }
 
         internal FileCollisionService(SettingsService settings, Func<string, string, CollisionPromptResult> prompt)
         {

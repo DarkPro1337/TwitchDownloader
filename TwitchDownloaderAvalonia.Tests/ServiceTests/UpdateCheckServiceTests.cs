@@ -1,5 +1,6 @@
 using System.Net;
 using TwitchDownloaderAvalonia.Services;
+using TwitchDownloaderAvalonia.Tests.Fakes;
 
 namespace TwitchDownloaderAvalonia.Tests.ServiceTests
 {
@@ -12,7 +13,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             handler.EnqueueError(new HttpRequestException("offline"));
             handler.EnqueueXml("<item><version>9.9.9</version><changelog>https://example.com</changelog></item>");
 
-            var service = new UpdateCheckService(new HttpClient(handler));
+            var service = new UpdateCheckService(new FakeHttpClientFactory(handler));
             var local = new Version(1, 0, 0);
 
             var first = await service.CheckAsync(local, TestContext.Current.CancellationToken);

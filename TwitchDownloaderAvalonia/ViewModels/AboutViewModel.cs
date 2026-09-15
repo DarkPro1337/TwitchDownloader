@@ -10,13 +10,14 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private const string DEFAULT_CHANGELOG_URL = UpdateCheckService.DEFAULT_CHANGELOG_URL;
 
         private readonly UpdateCheckService _updates;
-        private readonly DialogService _dialogs;
+        private readonly IDialogService _dialogs;
         private readonly FfmpegService _ffmpeg;
         private readonly Version _localVersion;
         private string? _remoteVersion;
         private Task? _checkTask;
 
-        public AboutViewModel(UpdateCheckService updates, DialogService dialogs, FfmpegService ffmpeg)
+        public AboutViewModel(LocalizationService loc, UpdateCheckService updates, IDialogService dialogs, FfmpegService ffmpeg)
+            : base(loc)
         {
             _updates = updates;
             _dialogs = dialogs;
@@ -152,7 +153,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 ffmpeg);
         }
 
-        private static string FormatVersion(Version version)
+        private string FormatVersion(Version version)
         {
 #if DEBUG
             return Loc.Get("about.version_debug", version);
@@ -161,7 +162,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
 #endif
         }
 
-        private static string ReadLicense(Assembly assembly)
+        private string ReadLicense(Assembly assembly)
         {
             using var stream = assembly.GetManifestResourceStream(LICENSE_RESOURCE_NAME);
             if (stream is null)

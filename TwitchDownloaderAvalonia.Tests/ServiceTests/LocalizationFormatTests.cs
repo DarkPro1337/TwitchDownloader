@@ -1,4 +1,5 @@
 using TwitchDownloaderAvalonia.Converters;
+using TwitchDownloaderAvalonia.Models;
 using TwitchDownloaderAvalonia.Services;
 
 namespace TwitchDownloaderAvalonia.Tests.ServiceTests
@@ -27,7 +28,19 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
         [Fact]
         public void UnknownQualityKeepsOriginalName()
         {
-            Assert.Equal("1080p60", QualityLabels.Get("1080p60"));
+            Assert.Equal("1080p60", QualityLabels.Get(TestLocalization.Instance, "1080p60"));
+        }
+
+        [Fact]
+        public void NamedQualitiesMapToLocalizationKeys()
+        {
+            var loc = TestLocalization.Instance;
+
+            Assert.Equal(loc.Get("quality.source"), QualityLabels.Get(loc, QualityNames.SOURCE));
+            Assert.Equal(loc.Get("quality.source_portrait"), QualityLabels.Get(loc, QualityNames.SOURCE_PORTRAIT));
+            Assert.Equal(loc.Get("quality.worst"), QualityLabels.Get(loc, QualityNames.WORST));
+            Assert.Equal(loc.Get("quality.worst_portrait"), QualityLabels.Get(loc, QualityNames.WORST_PORTRAIT));
+            Assert.Equal(loc.Get("quality.audio_only"), QualityLabels.Get(loc, QualityNames.AUDIO_ONLY));
         }
     }
 }

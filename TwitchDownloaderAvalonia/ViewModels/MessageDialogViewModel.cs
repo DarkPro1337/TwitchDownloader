@@ -1,10 +1,11 @@
 namespace TwitchDownloaderAvalonia.ViewModels
 {
     public sealed partial class MessageDialogViewModel(
+        LocalizationService loc,
         string title,
         string message,
         Action<bool> close,
-        bool showCancel = false) : ViewModelBase
+        bool showCancel = false) : ViewModelBase(loc)
     {
         public string Title { get; } = title;
         public string Message { get; } = message;

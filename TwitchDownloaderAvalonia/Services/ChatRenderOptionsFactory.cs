@@ -69,6 +69,7 @@ namespace TwitchDownloaderAvalonia.Services
         }
 
         public static ChatRenderOptions FromSettings(
+            LocalizationService loc,
             AppSettings settings,
             string inputFile,
             string outputFile,
@@ -82,7 +83,7 @@ namespace TwitchDownloaderAvalonia.Services
                 ? (EmojiVendor)render.EmojiVendor
                 : EmojiVendor.GoogleNotoColor;
 
-            return Create(new ChatRenderBuildArgs
+            return Create(loc, new ChatRenderBuildArgs
             {
                 InputFile = inputFile,
                 OutputFile = outputFile,
@@ -137,14 +138,15 @@ namespace TwitchDownloaderAvalonia.Services
         }
 
         public static ChatRenderOptions Create(
+            LocalizationService loc,
             ChatRenderBuildArgs args,
             string ffmpegPath,
             Func<FileInfo, FileInfo> collisionCallback)
         {
-            var background = RequireColor(args.BackgroundColorHex);
-            var alternate = RequireColor(args.AlternateBackgroundColorHex);
-            var fontColor = RequireColor(args.FontColorHex);
-            var highlight = RequireColor(args.HighlightUsersColorHex);
+            var background = RequireColor(loc, args.BackgroundColorHex);
+            var alternate = RequireColor(loc, args.AlternateBackgroundColorHex);
+            var fontColor = RequireColor(loc, args.FontColorHex);
+            var highlight = RequireColor(loc, args.HighlightUsersColorHex);
             var inputArgs = args.Sharpening
                 ? args.FfmpegInputArgs + " -filter_complex \"smartblur=lr=1:ls=-1.0\""
                 : args.FfmpegInputArgs;
@@ -217,10 +219,10 @@ namespace TwitchDownloaderAvalonia.Services
             return true;
         }
 
-        private static SKColor RequireColor(string hex)
+        private static SKColor RequireColor(LocalizationService loc, string hex)
         {
             if (!TryParseColor(hex, out var color))
-                throw new InvalidOperationException(Loc.Get("render.invalid_colors"));
+                throw new InvalidOperationException(loc.Get("render.invalid_colors"));
 
             return color;
         }

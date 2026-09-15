@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging.Abstractions;
+using TwitchDownloaderAvalonia.Tests.Fakes;
 using TwitchDownloaderAvalonia.ViewModels;
 using TwitchDownloaderCore.Tools;
 
@@ -116,10 +118,16 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var dirs = new List<DirectoryInfo> { first };
             if (second is not null)
                 dirs.Add(second);
+
             if (third is not null)
                 dirs.Add(third);
 
-            return new AbandonedVideoCacheViewModel(dirs, close ?? (_ => { }));
+            return new AbandonedVideoCacheViewModel(
+                TestLocalization.Instance,
+                dirs,
+                close ?? (_ => { }),
+                new FakeDialogService(),
+                NullLogger.Instance);
         }
 
         private sealed class TempCache : IDisposable

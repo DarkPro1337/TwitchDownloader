@@ -53,7 +53,7 @@ namespace TwitchDownloaderAvalonia.Models
     public sealed class QueueSettings
     {
         public string Folder { get; set; } = string.Empty;
-        public string PreferredQuality { get; set; } = "Source";
+        public string PreferredQuality { get; set; } = QualityNames.SOURCE;
         public int LimitVod { get; set; } = 6;
         public int LimitClip { get; set; } = 10;
         public int LimitChat { get; set; } = 10;

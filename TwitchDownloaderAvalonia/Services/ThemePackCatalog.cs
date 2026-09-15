@@ -30,14 +30,8 @@ namespace TwitchDownloaderAvalonia.Services
                     continue;
 
                 var name = Path.GetFileNameWithoutExtension(file);
-                if (string.IsNullOrWhiteSpace(name))
+                if (string.IsNullOrWhiteSpace(name) || !ThemePackKeys.ShouldListPack(name))
                     continue;
-
-                if (!ThemePackKeys.ShouldListPack(name))
-                {
-                    Debug.WriteLine($"[themes] skipped pack name: {name}");
-                    continue;
-                }
 
                 names.Add(name);
             }

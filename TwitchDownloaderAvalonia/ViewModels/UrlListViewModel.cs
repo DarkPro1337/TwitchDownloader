@@ -1,11 +1,12 @@
 namespace TwitchDownloaderAvalonia.ViewModels
 {
     public sealed partial class UrlListViewModel(
+        LocalizationService loc,
         SettingsService settings,
-        DialogService dialogs,
+        IDialogService dialogs,
         ThumbnailService thumbnails,
         QueueEnqueueService enqueue,
-        Action<bool> close) : ViewModelBase
+        Action<bool> close) : ViewModelBase(loc)
     {
         private bool _closed;
 

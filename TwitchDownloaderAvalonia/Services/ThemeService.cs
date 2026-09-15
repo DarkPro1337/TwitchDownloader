@@ -1,42 +1,38 @@
 using Avalonia.Styling;
+using Microsoft.Extensions.Logging;
 
 namespace TwitchDownloaderAvalonia.Services
 {
-    public static class ThemeService
+    public sealed class ThemeService(ILogger<ThemeService> logger)
     {
         public const string SYSTEM = "System";
         public const string LIGHT = "Light";
         public const string DARK = "Dark";
 
-        internal static ThemePackCatalog Catalog { get; } = new(Path.Combine(AppContext.BaseDirectory, "Themes"));
+        internal ThemePackCatalog Catalog { get; } = new(Path.Combine(AppContext.BaseDirectory, "Themes"));
 
-        public static IReadOnlyList<ThemePackInfo> ScanPackInfos() => Catalog.ScanPackInfos();
+        public IReadOnlyList<ThemePackInfo> ScanPackInfos() => Catalog.ScanPackInfos();
 
-        public static IReadOnlyList<string> GetLightThemeOptions()
+        public ThemeOptionLists GetThemeOptions()
         {
-            var names = new List<string> { LIGHT };
-            foreach (var pack in ScanPackInfos())
-            {
-                if (!pack.IsDark)
-                    names.Add(pack.Name);
-            }
-
-            return names;
-        }
-
-        public static IReadOnlyList<string> GetDarkThemeOptions()
-        {
-            var names = new List<string> { DARK };
+            var light = new List<string> { LIGHT };
+            var dark = new List<string> { DARK };
             foreach (var pack in ScanPackInfos())
             {
                 if (pack.IsDark)
-                    names.Add(pack.Name);
+                    dark.Add(pack.Name);
+                else
+                    light.Add(pack.Name);
             }
 
-            return names;
+            return new ThemeOptionLists(light, dark);
         }
 
-        public static ThemeStartupResult Initialize(SettingsService settings)
+        public IReadOnlyList<string> GetLightThemeOptions() => GetThemeOptions().Light;
+
+        public IReadOnlyList<string> GetDarkThemeOptions() => GetThemeOptions().Dark;
+
+        public ThemeStartupResult Initialize(SettingsService settings)
         {
             bool writeOk;
             try
@@ -45,7 +41,7 @@ namespace TwitchDownloaderAvalonia.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[themes] failed to write included packs: {ex.Message}");
+                logger.LogWarning(ex, "Failed to write included theme packs");
                 writeOk = false;
             }
 
@@ -68,7 +64,7 @@ namespace TwitchDownloaderAvalonia.Services
             return new ThemeStartupResult(!writeOk, missing);
         }
 
-        public static ThemePreferences Normalize(
+        public ThemePreferences Normalize(
             string? mode,
             string? lightTheme,
             string? darkTheme,
@@ -133,17 +129,17 @@ namespace TwitchDownloaderAvalonia.Services
                     : ThemeVariant.Default;
         }
 
-        public static void Apply(AppSettings settings)
+        public void Apply(AppSettings settings)
         {
             Apply(Normalize(settings.Ui.Theme, settings.Ui.LightTheme, settings.Ui.DarkTheme));
         }
 
-        public static void Apply(string? mode, string? lightTheme = null, string? darkTheme = null)
+        public void Apply(string? mode, string? lightTheme = null, string? darkTheme = null)
         {
             Apply(Normalize(mode, lightTheme, darkTheme));
         }
 
-        public static void Apply(ThemePreferences prefs)
+        public void Apply(ThemePreferences prefs)
         {
             if (Application.Current is null)
                 return;
@@ -155,7 +151,7 @@ namespace TwitchDownloaderAvalonia.Services
             Application.Current.RequestedThemeVariant = GetRequestedVariant(prefs.Mode);
         }
 
-        private static void SetOverlay(ThemeVariant variant, string themeName, string builtinName)
+        private void SetOverlay(ThemeVariant variant, string themeName, string builtinName)
         {
             var app = Application.Current!;
             app.Resources.ThemeDictionaries.Remove(variant);
@@ -217,6 +213,8 @@ namespace TwitchDownloaderAvalonia.Services
             return value is not null && value.Equals(mode, StringComparison.OrdinalIgnoreCase);
         }
     }
+
+    public readonly record struct ThemeOptionLists(IReadOnlyList<string> Light, IReadOnlyList<string> Dark);
 
     public readonly record struct ThemePackInfo(string Name, bool IsDark);
 

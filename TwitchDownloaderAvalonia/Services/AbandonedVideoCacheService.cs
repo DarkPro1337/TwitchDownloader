@@ -5,7 +5,7 @@ namespace TwitchDownloaderAvalonia.Services
         private readonly Func<DirectoryInfo[], DirectoryInfo[]> _prompt;
         private readonly SemaphoreSlim _gate = new(1, 1);
 
-        public AbandonedVideoCacheService(DialogService dialogs) : this(dialogs.PromptAbandonedVideoCaches) { }
+        public AbandonedVideoCacheService(IDialogService dialogs) : this(dialogs.PromptAbandonedVideoCaches) { }
 
         internal AbandonedVideoCacheService(Func<DirectoryInfo[], DirectoryInfo[]> prompt)
         {
@@ -20,7 +20,7 @@ namespace TwitchDownloaderAvalonia.Services
             _gate.Wait();
             try
             {
-                return _prompt(directories) ?? [];
+                return _prompt(directories);
             }
             finally
             {

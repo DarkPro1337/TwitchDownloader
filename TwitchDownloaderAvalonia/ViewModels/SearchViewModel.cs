@@ -6,7 +6,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
     public partial class SearchViewModel : ViewModelBase
     {
         private readonly SettingsService _settings;
-        private readonly DialogService _dialogs;
+        private readonly IDialogService _dialogs;
         private readonly ThumbnailService _thumbnails;
         private readonly QueueEnqueueService _enqueue;
         private readonly Func<SearchResultItem, Task> _openItem;
@@ -21,12 +21,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private bool _hasSearched;
 
         public SearchViewModel(
+            LocalizationService loc,
             SettingsService settings,
             AppStatus status,
-            DialogService dialogs,
+            IDialogService dialogs,
             ThumbnailService thumbnails,
             Func<SearchResultItem, Task> openItem,
-            QueueEnqueueService enqueue)
+            QueueEnqueueService enqueue) : base(loc)
         {
             _settings = settings;
             AppStatus = status;
@@ -140,20 +141,20 @@ namespace TwitchDownloaderAvalonia.ViewModels
             Notify(nameof(AddToQueueText), nameof(SelectedCountText), nameof(EmptyText));
         }
 
-        private static IReadOnlyList<SearchFilterOption> CreateVideoTypes() =>
+        private IReadOnlyList<SearchFilterOption> CreateVideoTypes() =>
         [
-            new("search.video_all", ""),
-            new("search.video_archive", "ARCHIVE"),
-            new("search.video_highlight", "HIGHLIGHT"),
-            new("search.video_upload", "UPLOAD"),
+            new(Loc, "search.video_all", ""),
+            new(Loc, "search.video_archive", "ARCHIVE"),
+            new(Loc, "search.video_highlight", "HIGHLIGHT"),
+            new(Loc, "search.video_upload", "UPLOAD"),
         ];
 
-        private static IReadOnlyList<SearchFilterOption> CreateClipPeriods() =>
+        private IReadOnlyList<SearchFilterOption> CreateClipPeriods() =>
         [
-            new("search.clip_day", "LAST_DAY"),
-            new("search.clip_week", "LAST_WEEK"),
-            new("search.clip_month", "LAST_MONTH"),
-            new("search.clip_all", "ALL_TIME"),
+            new(Loc, "search.clip_day", "LAST_DAY"),
+            new(Loc, "search.clip_week", "LAST_WEEK"),
+            new(Loc, "search.clip_month", "LAST_MONTH"),
+            new(Loc, "search.clip_all", "ALL_TIME"),
         ];
 
         partial void OnKindChanged(SearchKind value) => OnSearchKindChanged(value);
@@ -562,7 +563,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             string? clipperId = null,
             bool isRecording = false)
         {
-            var item = new SearchResultItem
+            var item = new SearchResultItem(Loc)
             {
                 Id = id,
                 Title = title,

@@ -31,7 +31,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = Build(Items(Vod("1"), Clip("clip")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = false,
                 DownloadChat = true,
                 ChatFormat = ChatFormat.Json,
@@ -51,7 +51,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = Build(Items(Vod("1"), Clip("clip")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = true,
                 DownloadChat = true,
                 ChatFormat = ChatFormat.Json,
@@ -71,7 +71,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = Build(Items(Vod("1")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = true,
                 DownloadChat = true,
                 ChatFormat = ChatFormat.Json,
@@ -96,7 +96,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = Build(Items(Vod("1")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = true,
                 DownloadChat = true,
                 ChatFormat = format,
@@ -113,7 +113,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jsonJobs = Build(Items(Vod("1")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = false,
                 DownloadChat = true,
                 ChatFormat = ChatFormat.Json,
@@ -123,7 +123,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var txtJobs = Build(Items(Vod("2")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = false,
                 DownloadChat = true,
                 ChatFormat = ChatFormat.Text,
@@ -158,7 +158,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = Build(Items(Vod("1", "SameName")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = true,
                 DownloadChat = true,
                 ChatFormat = ChatFormat.Json,
@@ -178,7 +178,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = Build(Items(Vod("9", isRecording: true), Clip("clip")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = true,
                 DelayVideo = true,
                 DownloadChat = true,
@@ -201,7 +201,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = Build(Items(Vod("9"), Clip("clip")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = true,
                 DelayVideo = true,
                 DownloadChat = true,
@@ -221,7 +221,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = Build(Items(Vod("1")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = false,
                 DownloadChat = false,
                 RenderChat = true,
@@ -237,11 +237,12 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             var jobs = MassEnqueuePlanner.Build(Items(Vod("1")), new EnqueueOptions
             {
                 Folder = Folder,
-                Quality = "Source",
+                Quality = QualityNames.SOURCE,
                 DownloadVideo = true,
             }, new MassEnqueueContext
             {
                 Settings = new AppSettings(),
+                Localization = TestLocalization.Instance,
                 FfmpegPath = "ffmpeg",
                 CollisionCallback = info => info,
                 CacheCleanerCallback = callback,
@@ -260,6 +261,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             return MassEnqueuePlanner.Build(items, options, new MassEnqueueContext
             {
                 Settings = settings ?? new AppSettings(),
+                Localization = TestLocalization.Instance,
                 FfmpegPath = "ffmpeg",
                 CollisionCallback = info => info,
                 CacheCleanerCallback = dirs => dirs,
@@ -341,7 +343,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
         {
             using var vm = Create(hasVods: false);
 
-            Assert.DoesNotContain("Audio Only", vm.AvailableQualities);
+            Assert.DoesNotContain(QualityNames.AUDIO_ONLY, vm.AvailableQualities);
             Assert.False(vm.ShowDelayControls);
             Assert.False(vm.IsDelayVideoEnabled);
             Assert.False(vm.IsDelayChatEnabled);
@@ -352,7 +354,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
         {
             using var vm = Create(hasVods: true, hasRecordingVods: false);
 
-            Assert.Contains("Audio Only", vm.AvailableQualities);
+            Assert.Contains(QualityNames.AUDIO_ONLY, vm.AvailableQualities);
             Assert.False(vm.ShowDelayControls);
             Assert.False(vm.IsDelayVideoEnabled);
             Assert.False(vm.IsDelayChatEnabled);
@@ -423,11 +425,13 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
 
         private static EnqueueOptionsViewModel Create(bool hasVods, Action<EnqueueOptions?>? close = null, bool? hasRecordingVods = null)
         {
+            var loc = TestLocalization.Instance;
             var directory = Path.Combine(Path.GetTempPath(), "TwitchDownloaderTests", Guid.NewGuid().ToString("N"));
             var settings = new SettingsService(Path.Combine(directory, "avalonia-settings.json"));
             return new EnqueueOptionsViewModel(
+                loc,
                 settings,
-                new FileDialogService(),
+                new FileDialogService(loc),
                 hasVods,
                 hasRecordingVods ?? hasVods,
                 close ?? (_ => { }));

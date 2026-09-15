@@ -4,8 +4,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
     {
         public static IReadOnlyList<string> Qualities { get; } =
         [
-            "Source",
-            "Source Portrait",
+            QualityNames.SOURCE,
+            QualityNames.SOURCE_PORTRAIT,
             "1440p",
             "1080p",
             "720p",
@@ -13,23 +13,24 @@ namespace TwitchDownloaderAvalonia.ViewModels
             "360p",
             "160p",
             "144p",
-            "Worst",
-            "Worst Portrait",
-            "Audio Only",
+            QualityNames.WORST,
+            QualityNames.WORST_PORTRAIT,
+            QualityNames.AUDIO_ONLY,
         ];
 
         private readonly SettingsService _settings;
-        private readonly FileDialogService _files;
+        private readonly IFileDialogService _files;
         private readonly Action<EnqueueOptions?> _close;
         private bool _suppressQuality;
         private bool _suppressRender;
 
         public EnqueueOptionsViewModel(
+            LocalizationService loc,
             SettingsService settings,
-            FileDialogService files,
+            IFileDialogService files,
             bool hasVods,
             bool hasRecordingVods,
-            Action<EnqueueOptions?> close)
+            Action<EnqueueOptions?> close) : base(loc)
         {
             _settings = settings;
             _files = files;
@@ -38,7 +39,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             HasRecordingVods = hasRecordingVods;
             Folder = settings.Current.Queue.Folder;
             AvailableQualities = !hasVods
-                ? [.. Qualities.Where(quality => quality != "Audio Only")]
+                ? [.. Qualities.Where(quality => quality != QualityNames.AUDIO_ONLY)]
                 : Qualities;
 
             RebuildQualityOptions();
@@ -189,7 +190,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         private void RebuildQualityOptions()
         {
-            QualityOptions = [.. AvailableQualities.Select(value => new LabeledOption(value, QualityLabels.Get(value)))];
+            QualityOptions = [.. AvailableQualities.Select(value => new LabeledOption(value, QualityLabels.Get(Loc, value)))];
             OnPropertyChanged(nameof(QualityOptions));
         }
 

@@ -5,7 +5,7 @@ using Xabe.FFmpeg.Downloader;
 
 namespace TwitchDownloaderAvalonia.Services
 {
-    public sealed class FfmpegService
+    public sealed class FfmpegService(LocalizationService loc)
     {
         public static string ExecutableName { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ffmpeg.exe" : "ffmpeg";
 
@@ -41,7 +41,7 @@ namespace TwitchDownloaderAvalonia.Services
             var destination = Path.Combine(AppContext.BaseDirectory, ExecutableName);
             try
             {
-                using var progressHandler = new XabeProgressHandler(progress);
+                using var progressHandler = new XabeProgressHandler(loc, progress);
                 await FFmpegDownloader.GetLatestVersion(FFmpegVersion.Official, AppContext.BaseDirectory, progressHandler);
 
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && File.Exists(destination))
@@ -56,7 +56,7 @@ namespace TwitchDownloaderAvalonia.Services
                             ? "sudo chmod +x ffmpeg"
                             : "chmod +x ffmpeg";
 
-                        progress.LogError(Loc.Get("status.ffmpeg_chmod_failed", chmodCommand));
+                        progress.LogError(loc.Get("status.ffmpeg_chmod_failed", chmodCommand));
                     }
                 }
 
@@ -69,7 +69,7 @@ namespace TwitchDownloaderAvalonia.Services
             }
             catch (Exception ex) when (alreadyAvailable || IsAvailable())
             {
-                progress.LogWarning(Loc.Get("status.ffmpeg_download_failed_log", ex.Message));
+                progress.LogWarning(loc.Get("status.ffmpeg_download_failed_log", ex.Message));
                 IsAvailable();
             }
         }
@@ -107,10 +107,10 @@ namespace TwitchDownloaderAvalonia.Services
             private int _lastPercent = -1;
             private readonly ITaskProgress _progress;
 
-            public XabeProgressHandler(ITaskProgress progress)
+            public XabeProgressHandler(LocalizationService loc, ITaskProgress progress)
             {
                 _progress = progress;
-                _progress.SetTemplateStatus(Loc.Get("status.downloading_ffmpeg"), 0);
+                _progress.SetTemplateStatus(loc.Get("status.downloading_ffmpeg"), 0);
             }
 
             public void Report(ProgressInfo value)

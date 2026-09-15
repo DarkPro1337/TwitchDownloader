@@ -1,21 +1,12 @@
+using TwitchDownloaderAvalonia.DependencyInjection;
+
 namespace TwitchDownloaderAvalonia.Services
 {
-    public sealed class ThumbnailService : IDisposable
+    public sealed class ThumbnailService(IHttpClientFactory httpClientFactory)
     {
         internal const long MAX_BYTES = 5 * 1024 * 1024;
 
         private const string MISSING_THUMBNAIL_URL = @"https://vod-secure.twitch.tv/_404/404_processing_320x180.png";
-
-        private readonly HttpClient _httpClient;
-
-        public ThumbnailService() : this(new HttpClient { Timeout = TimeSpan.FromSeconds(15) })
-        {
-        }
-
-        internal ThumbnailService(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
 
         public async Task<byte[]?> TryGetAsync(string? url, CancellationToken cancellationToken = default)
         {
@@ -24,7 +15,8 @@ namespace TwitchDownloaderAvalonia.Services
 
             try
             {
-                using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using var httpClient = httpClientFactory.CreateClient(HttpClientNames.Thumbnails);
+                using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 if (response.Content.Headers.ContentLength > MAX_BYTES)
                     return null;
@@ -52,11 +44,6 @@ namespace TwitchDownloaderAvalonia.Services
             {
                 return null;
             }
-        }
-
-        public void Dispose()
-        {
-            _httpClient.Dispose();
         }
     }
 }

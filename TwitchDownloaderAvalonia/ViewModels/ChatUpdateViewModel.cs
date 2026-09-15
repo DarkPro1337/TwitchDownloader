@@ -6,8 +6,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
     public partial class ChatUpdateViewModel : ViewModelBase
     {
         private readonly SettingsService _settings;
-        private readonly DialogService _dialogs;
-        private readonly FileDialogService _fileDialogs;
+        private readonly IDialogService _dialogs;
+        private readonly IFileDialogService _fileDialogs;
         private readonly FileCollisionService _collision;
         private readonly ThumbnailService _thumbnails;
         private readonly QueueService _queue;
@@ -31,13 +31,14 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private string _title = string.Empty;
 
         public ChatUpdateViewModel(
+            LocalizationService loc,
             SettingsService settings,
             AppStatus appStatus,
-            DialogService dialogs,
-            FileDialogService fileDialogs,
+            IDialogService dialogs,
+            IFileDialogService fileDialogs,
             FileCollisionService collision,
             ThumbnailService thumbnails,
-            QueueService queue)
+            QueueService queue) : base(loc)
         {
             _settings = settings;
             AppStatus = appStatus;

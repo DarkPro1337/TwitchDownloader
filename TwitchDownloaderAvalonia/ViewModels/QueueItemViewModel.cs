@@ -10,18 +10,19 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         private CancellationTokenSource _tokenSource = new();
         private QueueService? _queue;
-        private DialogService? _dialogs;
+        private IDialogService? _dialogs;
         private AppStatus? _appStatus;
         private bool _hasLiveProgressStatus;
 
         private QueueItemViewModel(
+            LocalizationService loc,
             QueueTaskKind kind,
             object options,
             string title,
             byte[]? thumbnailBytes,
             string sourceId,
             LogLevel logLevel,
-            QueueItemViewModel? dependantTask)
+            QueueItemViewModel? dependantTask) : base(loc)
         {
             Kind = kind;
             _options = options;
@@ -108,7 +109,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _ => null,
         };
 
-        public void AttachHost(QueueService queue, DialogService dialogs, AppStatus status)
+        public void AttachHost(QueueService queue, IDialogService dialogs, AppStatus status)
         {
             _queue = queue;
             _dialogs = dialogs;
@@ -167,6 +168,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             }
 
             var progress = new AvaloniaTaskProgress(
+                Loc,
                 _logLevel,
                 percent => Progress = percent,
                 status =>
@@ -352,12 +354,14 @@ namespace TwitchDownloaderAvalonia.ViewModels
         }
 
         public static QueueItemViewModel CreateVod(
+            LocalizationService loc,
             VideoDownloadOptions options,
             string title,
             byte[]? thumbnail,
             LogLevel logLevel)
         {
             return new QueueItemViewModel(
+                loc,
                 QueueTaskKind.VodDownload,
                 options,
                 title,
@@ -368,12 +372,14 @@ namespace TwitchDownloaderAvalonia.ViewModels
         }
 
         public static QueueItemViewModel CreateClip(
+            LocalizationService loc,
             ClipDownloadOptions options,
             string title,
             byte[]? thumbnail,
             LogLevel logLevel)
         {
             return new QueueItemViewModel(
+                loc,
                 QueueTaskKind.ClipDownload,
                 options,
                 title,
@@ -384,6 +390,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         }
 
         public static QueueItemViewModel CreateChat(
+            LocalizationService loc,
             ChatDownloadOptions options,
             string title,
             byte[]? thumbnail,
@@ -391,6 +398,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             QueueItemViewModel? dependantTask = null)
         {
             return new QueueItemViewModel(
+                loc,
                 QueueTaskKind.ChatDownload,
                 options,
                 title,
@@ -401,12 +409,14 @@ namespace TwitchDownloaderAvalonia.ViewModels
         }
 
         public static QueueItemViewModel CreateChatUpdate(
+            LocalizationService loc,
             ChatUpdateOptions options,
             string title,
             byte[]? thumbnail,
             LogLevel logLevel)
         {
             return new QueueItemViewModel(
+                loc,
                 QueueTaskKind.ChatUpdate,
                 options,
                 title,
@@ -417,6 +427,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         }
 
         public static QueueItemViewModel CreateChatRender(
+            LocalizationService loc,
             ChatRenderOptions options,
             string title,
             byte[]? thumbnail,
@@ -424,6 +435,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             QueueItemViewModel? dependantTask = null)
         {
             return new QueueItemViewModel(
+                loc,
                 QueueTaskKind.ChatRender,
                 options,
                 title,
@@ -543,7 +555,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             DisplayStatus = StatusLabel(Status);
         }
 
-        private static string StatusLabel(QueueItemStatus status) => status switch
+        private string StatusLabel(QueueItemStatus status) => status switch
         {
             QueueItemStatus.Ready => Loc.Get("queue.status_ready"),
             QueueItemStatus.Waiting => Loc.Get("queue.status_waiting"),

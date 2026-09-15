@@ -1,5 +1,6 @@
 using Avalonia.Media;
 using Avalonia.Styling;
+using Microsoft.Extensions.Logging;
 using TwitchDownloaderAvalonia.Services;
 
 namespace TwitchDownloaderAvalonia.Tests.ServiceTests
@@ -98,35 +99,37 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
         [Fact]
         public void ApplySelectionMapsBuiltinAndPackPreferences()
         {
+            using var loggerFactory = LoggerFactory.Create(_ => { });
+            var themes = new ThemeService(loggerFactory.CreateLogger<ThemeService>());
             ThemePackInfo[] packs =
             [
                 new("Light Pink", false),
                 new("Dark Pink", true),
             ];
 
-            var system = ThemeService.Normalize("System", "Light Pink", "Dark Pink", packs);
+            var system = themes.Normalize("System", "Light Pink", "Dark Pink", packs);
             Assert.Equal(ThemeService.SYSTEM, system.Mode);
             Assert.Equal("Light Pink", system.LightTheme);
             Assert.Equal("Dark Pink", system.DarkTheme);
             Assert.Empty(system.MissingPackFiles);
             Assert.Same(ThemeVariant.Default, ThemeService.GetRequestedVariant(system.Mode));
 
-            var light = ThemeService.Normalize("light", "Light Pink", "Dark", packs);
+            var light = themes.Normalize("light", "Light Pink", "Dark", packs);
             Assert.Equal(ThemeService.LIGHT, light.Mode);
             Assert.Same(ThemeVariant.Light, ThemeService.GetRequestedVariant(light.Mode));
 
-            var dark = ThemeService.Normalize("DARK", "Light", "dark pink", packs);
+            var dark = themes.Normalize("DARK", "Light", "dark pink", packs);
             Assert.Equal(ThemeService.DARK, dark.Mode);
             Assert.Equal("Dark Pink", dark.DarkTheme);
             Assert.Same(ThemeVariant.Dark, ThemeService.GetRequestedVariant(dark.Mode));
 
-            var migrated = ThemeService.Normalize("dark pink", "Light", "Dark", packs);
+            var migrated = themes.Normalize("dark pink", "Light", "Dark", packs);
             Assert.True(migrated.MigratedFromPack);
             Assert.Equal(ThemeService.DARK, migrated.Mode);
             Assert.Equal("Dark Pink", migrated.DarkTheme);
             Assert.Equal(ThemeService.LIGHT, migrated.LightTheme);
 
-            var missing = ThemeService.Normalize("Gone", "Missing Light", "Missing Dark", packs);
+            var missing = themes.Normalize("Gone", "Missing Light", "Missing Dark", packs);
             Assert.Equal(ThemeService.SYSTEM, missing.Mode);
             Assert.Equal(ThemeService.LIGHT, missing.LightTheme);
             Assert.Equal(ThemeService.DARK, missing.DarkTheme);
@@ -189,8 +192,10 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
         [Fact]
         public void ApplyDoesNothingWithoutApplication()
         {
-            ThemeService.Apply("Dark");
-            ThemeService.Apply("Missing Pack");
+            using var loggerFactory = LoggerFactory.Create(_ => { });
+            var themes = new ThemeService(loggerFactory.CreateLogger<ThemeService>());
+            themes.Apply("Dark");
+            themes.Apply("Missing Pack");
         }
 
         private static string CreateTempThemesDir()

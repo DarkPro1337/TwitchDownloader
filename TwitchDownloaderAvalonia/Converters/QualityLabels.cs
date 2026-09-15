@@ -2,19 +2,19 @@ namespace TwitchDownloaderAvalonia.Converters
 {
     public static class QualityLabels
     {
-        public static string Get(string value) => value switch
+        public static string Get(LocalizationService loc, string value) => value switch
         {
-            "Source" => Loc.Get("quality.source"),
-            "Source Portrait" => Loc.Get("quality.source_portrait"),
-            "Worst" => Loc.Get("quality.worst"),
-            "Worst Portrait" => Loc.Get("quality.worst_portrait"),
-            "Audio Only" => Loc.Get("quality.audio_only"),
+            QualityNames.SOURCE => loc.Get("quality.source"),
+            QualityNames.SOURCE_PORTRAIT => loc.Get("quality.source_portrait"),
+            QualityNames.WORST => loc.Get("quality.worst"),
+            QualityNames.WORST_PORTRAIT => loc.Get("quality.worst_portrait"),
+            QualityNames.AUDIO_ONLY => loc.Get("quality.audio_only"),
             _ => value,
         };
 
-        public static string WithSize(string qualityName, long sizeInBytes)
+        public static string WithSize(LocalizationService loc, string qualityName, long sizeInBytes)
         {
-            var label = Get(qualityName);
+            var label = Get(loc, qualityName);
             return sizeInBytes != 0
                 ? $"{label} - {VideoSizeEstimator.StringifyByteCount(sizeInBytes)}"
                 : label;

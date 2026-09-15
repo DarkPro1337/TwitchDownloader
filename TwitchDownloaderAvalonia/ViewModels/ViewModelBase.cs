@@ -4,9 +4,18 @@ namespace TwitchDownloaderAvalonia.ViewModels
     {
         private bool _disposed;
 
-        protected ViewModelBase()
+        protected ViewModelBase(LocalizationService loc)
         {
-            LocalizationService.Current.CultureChanged += OnCultureChanged;
+            Loc = loc;
+            Loc.CultureChanged += HandleCultureChanged;
+        }
+
+        public LocalizationService Loc { get; }
+
+        private void HandleCultureChanged(object? sender, EventArgs e)
+        {
+            OnPropertyChanged(nameof(Loc));
+            OnCultureChanged(sender, e);
         }
 
         protected virtual void OnCultureChanged(object? sender, EventArgs e) { }
@@ -25,7 +34,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 return;
 
             _disposed = true;
-            LocalizationService.Current.CultureChanged -= OnCultureChanged;
+            Loc.CultureChanged -= HandleCultureChanged;
             DisposeCore();
             GC.SuppressFinalize(this);
         }

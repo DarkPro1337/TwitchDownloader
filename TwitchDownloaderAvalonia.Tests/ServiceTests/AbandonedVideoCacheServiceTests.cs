@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Microsoft.Extensions.Logging.Abstractions;
 using TwitchDownloaderAvalonia.Services;
 
 namespace TwitchDownloaderAvalonia.Tests.ServiceTests
@@ -64,8 +65,9 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
 
         private static DialogService CreateDialogs()
         {
+            var loc = TestLocalization.Instance;
             var settingsPath = Path.Combine(Path.GetTempPath(), "TwitchDownloaderTests", Guid.NewGuid().ToString("N"), "settings.json");
-            return new DialogService(new SettingsService(settingsPath), new FileDialogService());
+            return new DialogService(loc, new SettingsService(settingsPath), new FileDialogService(loc), NullLoggerFactory.Instance);
         }
     }
 }
