@@ -4,6 +4,7 @@
     x:Class="TwitchDownloaderAvalonia.App"
     xmlns:vm="using:TwitchDownloaderAvalonia.ViewModels"
     xmlns:views="using:TwitchDownloaderAvalonia.Views"
+    Name="TwitchDownloader"
     RequestedThemeVariant="Default">
     <Application.DataTemplates>
         <DataTemplate DataType="vm:VodDownloadViewModel">

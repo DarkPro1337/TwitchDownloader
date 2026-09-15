@@ -15,8 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\icon.icns" />
     <AvaloniaResource Include="Lang\**" />
+    <None Include="Assets\icon.icns" CopyToOutputDirectory="Never" />
+    <None Include="MacOS\**" CopyToOutputDirectory="Never" />
     <EmbeddedResource Include="..\LICENSE.txt" LogicalName="TwitchDownloaderAvalonia.LICENSE.txt" />
     <EmbeddedResource Include="Themes\README.txt" LogicalName="TwitchDownloaderAvalonia.Themes.README.txt" />
   </ItemGroup>

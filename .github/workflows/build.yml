@@ -364,28 +364,62 @@ jobs:
       with:
         dotnet-version: 10.0.x
     - name: Build MacOS Avalonia GUI
-      run: dotnet publish TwitchDownloaderAvalonia -p:PublishProfile=MacOS -p:DebugType=Embedded
+      run: dotnet publish TwitchDownloaderAvalonia -p:PublishProfile=MacOS -p:DebugType=Embedded -p:UseAppHost=true
     - name: Build MacOSArm64 Avalonia GUI
-      run: dotnet publish TwitchDownloaderAvalonia -p:PublishProfile=MacOSArm64 -p:DebugType=Embedded
+      run: dotnet publish TwitchDownloaderAvalonia -p:PublishProfile=MacOSArm64 -p:DebugType=Embedded -p:UseAppHost=true
 
-    - name: Verify MacOS Avalonia publish
+    - name: Create MacOS Avalonia app bundles
       run: |
-        chmod +x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOS/TwitchDownloaderAvalonia
-        chmod +x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOSArm64/TwitchDownloaderAvalonia
-        test -x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOS/TwitchDownloaderAvalonia
-        test -x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOSArm64/TwitchDownloaderAvalonia
+        version="${{ github.event.inputs.release_tag }}"
+        version="${version#v}"
+        chmod +x TwitchDownloaderAvalonia/MacOS/create-app-bundle.sh
+        TwitchDownloaderAvalonia/MacOS/create-app-bundle.sh \
+          --publish-dir TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOS \
+          --output TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app \
+          --version "$version"
+        TwitchDownloaderAvalonia/MacOS/create-app-bundle.sh \
+          --publish-dir TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOSArm64 \
+          --output TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app \
+          --version "$version"
+        test -x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app/Contents/MacOS/TwitchDownloaderAvalonia
+        test -x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app/Contents/MacOS/TwitchDownloaderAvalonia
+        test -f TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app/Contents/Resources/icon.icns
+        test -f TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app/Contents/Resources/icon.icns
+
+    # Optional Developer ID signing + notarization (Avalonia macOS deployment guide).
+    # Repo maintainers with secrets access should add:
+    #   MACOS_CERTIFICATE              base64-encoded Developer ID Application .p12
+    #   MACOS_CERTIFICATE_PWD          password for that .p12
+    #   APPLE_ID                       Apple ID email
+    #   APPLE_TEAM_ID                  10-character Team ID
+    #   APPLE_APP_SPECIFIC_PASSWORD    app-specific password for notarytool
+    # Optional:
+    #   MACOS_SIGNING_IDENTITY         "Developer ID Application: Name (TEAMID)"
+    # Until these are set, release zips remain unsigned .app bundles.
+    - name: Sign and notarize MacOS Avalonia app bundles
+      if: ${{ secrets.MACOS_CERTIFICATE != '' && secrets.MACOS_CERTIFICATE_PWD != '' && secrets.APPLE_ID != '' && secrets.APPLE_TEAM_ID != '' && secrets.APPLE_APP_SPECIFIC_PASSWORD != '' }}
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      run: |
+        chmod +x TwitchDownloaderAvalonia/MacOS/sign-and-notarize.sh
+        TwitchDownloaderAvalonia/MacOS/sign-and-notarize.sh \
+          --app TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app
+        TwitchDownloaderAvalonia/MacOS/sign-and-notarize.sh \
+          --app TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app
 
     - name: Zip MacOS Avalonia GUI
-      uses: vimtor/action-zip@v1.3
-      with:
-        files: "TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOS"
-        dest: TwitchDownloaderAvalonia-${{ github.event.inputs.release_tag }}-MacOS-x64.zip
-
-    - name: Zip MacOSArm64 Avalonia GUI
-      uses: vimtor/action-zip@v1.3
-      with:
-        files: "TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOSArm64"
-        dest: TwitchDownloaderAvalonia-${{ github.event.inputs.release_tag }}-MacOSArm64.zip
+      run: |
+        ditto -c -k --sequesterRsrc --keepParent \
+          TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app \
+          TwitchDownloaderAvalonia-${{ github.event.inputs.release_tag }}-MacOS-x64.zip
+        ditto -c -k --sequesterRsrc --keepParent \
+          TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app \
+          TwitchDownloaderAvalonia-${{ github.event.inputs.release_tag }}-MacOSArm64.zip
 
     - name: Download URL
       uses: actions/download-artifact@v8

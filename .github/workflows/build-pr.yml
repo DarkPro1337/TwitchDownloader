@@ -254,28 +254,39 @@ jobs:
       with:
         dotnet-version: 10.0.x
     - name: Build MacOS Avalonia GUI
-      run: dotnet publish TwitchDownloaderAvalonia -p:PublishProfile=MacOS -p:DebugType=Portable
+      run: dotnet publish TwitchDownloaderAvalonia -p:PublishProfile=MacOS -p:DebugType=Portable -p:UseAppHost=true
     - name: Build MacOSArm64 Avalonia GUI
-      run: dotnet publish TwitchDownloaderAvalonia -p:PublishProfile=MacOSArm64 -p:DebugType=Portable
+      run: dotnet publish TwitchDownloaderAvalonia -p:PublishProfile=MacOSArm64 -p:DebugType=Portable -p:UseAppHost=true
 
-    - name: Verify MacOS Avalonia publish
+    - name: Create MacOS Avalonia app bundles
       run: |
-        chmod +x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOS/TwitchDownloaderAvalonia
-        chmod +x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOSArm64/TwitchDownloaderAvalonia
-        test -x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOS/TwitchDownloaderAvalonia
-        test -x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOSArm64/TwitchDownloaderAvalonia
+        version="$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' TwitchDownloaderAvalonia/TwitchDownloaderAvalonia.csproj | head -n 1)"
+        chmod +x TwitchDownloaderAvalonia/MacOS/create-app-bundle.sh
+        TwitchDownloaderAvalonia/MacOS/create-app-bundle.sh \
+          --publish-dir TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOS \
+          --output TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app \
+          --version "$version"
+        TwitchDownloaderAvalonia/MacOS/create-app-bundle.sh \
+          --publish-dir TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOSArm64 \
+          --output TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app \
+          --version "$version"
+        test -x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app/Contents/MacOS/TwitchDownloaderAvalonia
+        test -x TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app/Contents/MacOS/TwitchDownloaderAvalonia
+        test -f TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app/Contents/Resources/icon.icns
+        test -f TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app/Contents/Resources/icon.icns
+        /usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' \
+          TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app/Contents/Info.plist | grep -qx 'icon.icns'
+        # PR artifacts stay unsigned. Release signing/notarization lives in build.yml
+        # and activates when maintainer Apple Developer secrets are configured.
 
     - name: Zip MacOS Avalonia GUI
-      uses: vimtor/action-zip@v1.3
-      with:
-        files: "TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOS"
-        dest: TwitchDownloaderAvalonia-MacOS-x64.zip
-
-    - name: Zip MacOSArm64 Avalonia GUI
-      uses: vimtor/action-zip@v1.3
-      with:
-        files: "TwitchDownloaderAvalonia/bin/Release/net10.0/publish/MacOSArm64"
-        dest: TwitchDownloaderAvalonia-MacOSArm64.zip
+      run: |
+        ditto -c -k --sequesterRsrc --keepParent \
+          TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOS-x64.app \
+          TwitchDownloaderAvalonia-MacOS-x64.zip
+        ditto -c -k --sequesterRsrc --keepParent \
+          TwitchDownloaderAvalonia/bin/Release/net10.0/publish/TwitchDownloaderAvalonia-MacOSArm64.app \
+          TwitchDownloaderAvalonia-MacOSArm64.zip
 
     - name: Upload MacOS Avalonia GUI Artifact Asset
       uses: actions/upload-artifact@v7
