@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using TwitchDownloaderAvalonia.Update.Services;
 
 namespace TwitchDownloaderAvalonia.DependencyInjection
 {
@@ -19,7 +20,8 @@ namespace TwitchDownloaderAvalonia.DependencyInjection
             services.AddSingleton<AbandonedVideoCacheService>();
             services.AddSingleton<ThumbnailService>();
             services.AddSingleton<QueueService>();
-            services.AddSingleton<UpdateCheckService>();
+            services.AddSingleton<UpdatePreferencesStore>();
+            services.AddSingleton<UpdateLauncher>();
             services.AddSingleton<QueueEnqueueService>();
 
             return services;

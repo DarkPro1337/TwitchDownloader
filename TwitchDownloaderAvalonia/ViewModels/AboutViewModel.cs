@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using TwitchDownloaderAvalonia.Update.Services;
 using TwitchDownloaderCore.Extensions;
 
 namespace TwitchDownloaderAvalonia.ViewModels
@@ -12,16 +13,19 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private readonly UpdateCheckService _updates;
         private readonly IDialogService _dialogs;
         private readonly FfmpegService _ffmpeg;
+        private readonly UpdateLauncher _launcher;
         private readonly Version _localVersion;
-        private string? _remoteVersion;
         private Task? _checkTask;
 
-        public AboutViewModel(LocalizationService loc, UpdateCheckService updates, IDialogService dialogs, FfmpegService ffmpeg)
+        public Version? RemoteVersion { get; private set; }
+
+        public AboutViewModel(LocalizationService loc, UpdateCheckService updates, IDialogService dialogs, FfmpegService ffmpeg, UpdateLauncher launcher)
             : base(loc)
         {
             _updates = updates;
             _dialogs = dialogs;
             _ffmpeg = ffmpeg;
+            _launcher = launcher;
 
             var assembly = typeof(AboutViewModel).Assembly;
             _localVersion = assembly.GetName().Version?.StripRevisionIfDefault() ?? new Version(0, 0, 0);
@@ -51,12 +55,15 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial bool IsCheckingUpdate { get; set; }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowUpdateStatus))]
+        [NotifyPropertyChangedFor(nameof(ShowUpdateButton))]
         public partial bool HasUpdate { get; set; }
 
         [ObservableProperty]
         public partial string ChangelogUrl { get; set; }
 
-        public bool ShowUpdateStatus => IsCheckingUpdate || !string.IsNullOrEmpty(UpdateStatusText);
+        public bool ShowUpdateStatus => IsCheckingUpdate || !string.IsNullOrEmpty(UpdateStatusText) || AppUpdateService.IsDryRun;
+        public bool ShowUpdateButton => HasUpdate || AppUpdateService.IsDryRun;
 
         protected override void OnCultureChanged(object? sender, EventArgs e)
         {
@@ -65,8 +72,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
             if (IsCheckingUpdate)
                 UpdateStatusText = Loc.Get("about.checking");
-            else if (HasUpdate && _remoteVersion is not null)
-                UpdateStatusText = Loc.Get("about.update_available", _remoteVersion);
+            else if (HasUpdate && RemoteVersion is not null)
+                UpdateStatusText = Loc.Get("about.update_available", RemoteVersion);
             else if (!string.IsNullOrEmpty(UpdateStatusText))
                 UpdateStatusText = Loc.Get("about.up_to_date");
         }
@@ -97,8 +104,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 if (result.IsNewer)
                 {
                     HasUpdate = true;
-                    _remoteVersion = result.RemoteVersion.ToString();
-                    UpdateStatusText = Loc.Get("about.update_available", _remoteVersion);
+                    RemoteVersion = result.RemoteVersion;
+                    UpdateStatusText = Loc.Get("about.update_available", RemoteVersion);
                     return;
                 }
 
@@ -115,6 +122,9 @@ namespace TwitchDownloaderAvalonia.ViewModels
                 IsCheckingUpdate = false;
             }
         }
+
+        [RelayCommand]
+        private Task OpenUpdateAsync() => _launcher.LaunchAsync(force: true);
 
         [RelayCommand]
         private void OpenUrl(string url)

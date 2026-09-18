@@ -24,6 +24,18 @@ namespace TwitchDownloaderAvalonia.Services
 
         public ObservableCollection<QueueItemViewModel> Items { get; } = [];
 
+        public bool HasUnfinishedWork
+        {
+            get
+            {
+                return Items.Any(item => item.Status
+                    is QueueItemStatus.Waiting
+                    or QueueItemStatus.Ready
+                    or QueueItemStatus.Running
+                    or QueueItemStatus.Stopping);
+            }
+        }
+
         public int LimitVod
         {
             get => Math.Clamp(_settings.Current.Queue.LimitVod, 1, 50);

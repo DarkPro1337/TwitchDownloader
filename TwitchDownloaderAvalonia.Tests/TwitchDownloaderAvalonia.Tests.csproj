@@ -17,6 +17,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\TwitchDownloaderAvalonia\TwitchDownloaderAvalonia.csproj" />
+        <ProjectReference Include="..\TwitchDownloaderAvalonia.Update\TwitchDownloaderAvalonia.Update.csproj" />
     </ItemGroup>
 
 </Project>

@@ -97,6 +97,14 @@
 
                     <CheckBox Content="{loc:Translate Key=settings.reduce_motion}" IsChecked="{Binding ReduceMotion}" />
                     <CheckBox Content="{loc:Translate Key=settings.hide_donation}" IsChecked="{Binding HideDonation}" />
+                    <StackPanel Spacing="4">
+                        <CheckBox Content="{loc:Translate Key=updater.auto_check}" IsChecked="{Binding OfferUpdatesOnStartup}" />
+                        <TextBlock
+                            Classes="muted"
+                            Margin="28,0,0,0"
+                            TextWrapping="Wrap"
+                            Text="{loc:Translate Key=updater.auto_check_hint}" />
+                    </StackPanel>
 
                     <StackPanel Spacing="6">
                         <TextBlock Classes="label" Text="{loc:Translate Key=settings.video_timestamps}" Margin="0" />

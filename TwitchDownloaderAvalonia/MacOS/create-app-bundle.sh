@@ -56,5 +56,8 @@ fi
 cp "$ICON_SRC" "$OUTPUT_APP/Contents/Resources/icon.icns"
 cp -a "$PUBLISH_DIR"/. "$OUTPUT_APP/Contents/MacOS/"
 chmod +x "$OUTPUT_APP/Contents/MacOS/TwitchDownloaderAvalonia"
+if [[ -f "$OUTPUT_APP/Contents/MacOS/TwitchDownloaderAvalonia.Updater" ]]; then
+  chmod +x "$OUTPUT_APP/Contents/MacOS/TwitchDownloaderAvalonia.Updater"
+fi
 
 echo "Created $OUTPUT_APP"

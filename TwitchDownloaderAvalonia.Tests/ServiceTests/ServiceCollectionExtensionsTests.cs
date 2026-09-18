@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TwitchDownloaderAvalonia.DependencyInjection;
 using TwitchDownloaderAvalonia.Services;
+using TwitchDownloaderAvalonia.Update;
+using TwitchDownloaderAvalonia.Update.Services;
 using TwitchDownloaderAvalonia.ViewModels;
 using TwitchDownloaderAvalonia.Views;
 

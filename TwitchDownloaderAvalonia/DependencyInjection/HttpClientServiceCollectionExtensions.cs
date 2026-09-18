@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using TwitchDownloaderAvalonia.Update.Services;
 
 namespace TwitchDownloaderAvalonia.DependencyInjection
 {
@@ -17,7 +18,7 @@ namespace TwitchDownloaderAvalonia.DependencyInjection
                 client.Timeout = TimeSpan.FromSeconds(15);
             });
 
-            services.AddHttpClient(HttpClientNames.Updates, client =>
+            services.AddHttpClient<UpdateCheckService>(HttpClientNames.Updates, client =>
             {
                 client.Timeout = TimeSpan.FromSeconds(15);
                 client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "TwitchDownloader");

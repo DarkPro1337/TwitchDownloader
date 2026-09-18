@@ -44,9 +44,44 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TwitchDownloaderCore\TwitchDownloaderCore.csproj" />
+    <ProjectReference Include="..\TwitchDownloaderAvalonia.Update\TwitchDownloaderAvalonia.Update.csproj" />
+    <ProjectReference Include="..\TwitchDownloaderAvalonia.Updater\TwitchDownloaderAvalonia.Updater.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="TwitchDownloaderAvalonia.Tests" />
   </ItemGroup>
+
+  <Target Name="CopyUpdaterToOutput" AfterTargets="Build" Condition="'$(RuntimeIdentifier)' == ''">
+    <PropertyGroup>
+      <_UpdaterOut>$(MSBuildProjectDirectory)\..\TwitchDownloaderAvalonia.Updater\bin\$(Configuration)\$(TargetFramework)\</_UpdaterOut>
+    </PropertyGroup>
+    <ItemGroup>
+      <_UpdaterFiles Include="$(_UpdaterOut)**\*.*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_UpdaterFiles)"
+      DestinationFiles="@(_UpdaterFiles->'$(OutputPath)updater\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(_UpdaterOut)')" />
+  </Target>
+
+  <Target Name="PublishUpdater" AfterTargets="Publish" Condition="'$(RuntimeIdentifier)' != ''">
+    <PropertyGroup>
+      <_UpdaterPublishDir Condition="$([System.IO.Path]::IsPathRooted('$(PublishDir)'))">$(PublishDir)</_UpdaterPublishDir>
+      <_UpdaterPublishDir Condition="'$(_UpdaterPublishDir)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(PublishDir)'))</_UpdaterPublishDir>
+      <_UpdaterPublishProps>Configuration=$(Configuration);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=$(SelfContained);PublishSingleFile=$(PublishSingleFile);IncludeNativeLibrariesForSelfExtract=$(IncludeNativeLibrariesForSelfExtract);IncludeAllContentForSelfExtract=$(IncludeAllContentForSelfExtract);UseAppHost=$(UseAppHost);DebugType=$(DebugType);PublishDir=$(_UpdaterPublishDir);Version=$(Version);PublishTrimmed=false</_UpdaterPublishProps>
+    </PropertyGroup>
+    <MSBuild
+      Projects="$(MSBuildProjectDirectory)\..\TwitchDownloaderAvalonia.Updater\TwitchDownloaderAvalonia.Updater.csproj"
+      Targets="Restore"
+      Properties="$(_UpdaterPublishProps)" />
+    <MSBuild
+      Projects="$(MSBuildProjectDirectory)\..\TwitchDownloaderAvalonia.Updater\TwitchDownloaderAvalonia.Updater.csproj"
+      Targets="Publish"
+      Properties="$(_UpdaterPublishProps)" />
+  </Target>
 </Project>

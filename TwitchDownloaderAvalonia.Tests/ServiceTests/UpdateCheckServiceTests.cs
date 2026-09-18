@@ -1,6 +1,6 @@
 using System.Net;
-using TwitchDownloaderAvalonia.Services;
-using TwitchDownloaderAvalonia.Tests.Fakes;
+using TwitchDownloaderAvalonia.Update;
+using TwitchDownloaderAvalonia.Update.Services;
 
 namespace TwitchDownloaderAvalonia.Tests.ServiceTests
 {
@@ -13,7 +13,7 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             handler.EnqueueError(new HttpRequestException("offline"));
             handler.EnqueueXml("<item><version>9.9.9</version><changelog>https://example.com</changelog></item>");
 
-            var service = new UpdateCheckService(new FakeHttpClientFactory(handler));
+            var service = new UpdateCheckService(new HttpClient(handler, disposeHandler: false));
             var local = new Version(1, 0, 0);
 
             var first = await service.CheckAsync(local, TestContext.Current.CancellationToken);
@@ -22,7 +22,46 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             Assert.Null(first);
             Assert.NotNull(second);
             Assert.Equal(new Version(9, 9, 9), second.RemoteVersion);
+            Assert.Null(second.AvaloniaUrlTemplate);
             Assert.Equal(2, handler.Calls);
+        }
+
+        [Fact]
+        public async Task ParsesUrlAvaloniaAndChangelog()
+        {
+            var handler = new SequenceHandler();
+            handler.EnqueueXml("""
+                <item>
+                  <version>2.0.0</version>
+                  <url>https://example.com/gui.zip</url>
+                  <url-cli>https://example.com/cli-{0}.zip</url-cli>
+                  <url-avalonia>https://example.com/TwitchDownloaderAvalonia-2.0.0-{0}.zip</url-avalonia>
+                  <changelog>https://example.com/notes</changelog>
+                </item>
+                """);
+
+            var service = new UpdateCheckService(new HttpClient(handler, disposeHandler: false));
+            var result = await service.CheckAsync(new Version(1, 0, 0), TestContext.Current.CancellationToken);
+
+            Assert.NotNull(result);
+            Assert.True(result.IsNewer);
+            Assert.Equal("https://example.com/notes", result.ChangelogUrl);
+            Assert.Equal("https://example.com/TwitchDownloaderAvalonia-2.0.0-{0}.zip", result.AvaloniaUrlTemplate);
+        }
+
+        [Fact]
+        public async Task MissingChangelogFallsBackAndIgnoresWpfUrl()
+        {
+            var handler = new SequenceHandler();
+            handler.EnqueueXml("<item><version>1.0.0</version><url>https://example.com/wpf.zip</url></item>");
+
+            var service = new UpdateCheckService(new HttpClient(handler, disposeHandler: false));
+            var result = await service.CheckAsync(new Version(1, 0, 0), TestContext.Current.CancellationToken);
+
+            Assert.NotNull(result);
+            Assert.False(result.IsNewer);
+            Assert.Equal(UpdateCheckService.DEFAULT_CHANGELOG_URL, result.ChangelogUrl);
+            Assert.Null(result.AvaloniaUrlTemplate);
         }
 
         private sealed class SequenceHandler : HttpMessageHandler

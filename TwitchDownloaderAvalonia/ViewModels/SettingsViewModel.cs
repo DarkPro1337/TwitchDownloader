@@ -1,3 +1,5 @@
+using TwitchDownloaderAvalonia.Update.Services;
+
 namespace TwitchDownloaderAvalonia.ViewModels
 {
     public sealed partial class SettingsViewModel : ViewModelBase
@@ -8,6 +10,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private readonly IDialogService _dialogs;
         private readonly FileCollisionService _collision;
         private readonly ThemeService _themes;
+        private readonly UpdatePreferencesStore _updatePreferences;
         private static readonly StringComparer ThemeNames = StringComparer.OrdinalIgnoreCase;
         private bool _suppressSave;
 
@@ -19,7 +22,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             IFileDialogService files,
             IDialogService dialogs,
             FileCollisionService collision,
-            QueueService queue) : base(loc)
+            QueueService queue,
+            UpdatePreferencesStore updatePreferences) : base(loc)
         {
             _themes = themes;
             _settings = settings;
@@ -28,6 +32,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _dialogs = dialogs;
             _collision = collision;
             Queue = queue;
+            _updatePreferences = updatePreferences;
             LoadFromSettings();
         }
 
@@ -58,6 +63,9 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         [ObservableProperty]
         public partial bool ReduceMotion { get; set; }
+
+        [ObservableProperty]
+        public partial bool OfferUpdatesOnStartup { get; set; }
 
         [ObservableProperty]
         public partial bool UtcVideoTime { get; set; }
@@ -139,6 +147,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             SelectedThemePickerItem = FindPickerItemFromSettings();
             HideDonation = ui.HideDonation;
             ReduceMotion = ui.ReduceMotion;
+            OfferUpdatesOnStartup = _updatePreferences.Load().OfferOnStartup;
             UtcVideoTime = general.UtcVideoTime;
             OAuth = general.OAuth;
             TempPath = general.TempPath;
@@ -319,6 +328,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
             _settings.ResetToDefaults();
             _collision.ResetSessionBehavior();
+            _updatePreferences.Save(UpdatePromptPolicy.WithOfferOnStartup(_updatePreferences.Load(), true));
             LoadFromSettings();
             Loc.SetCulture(SelectedCulture.Code);
             _themes.Apply(_settings.Current);
@@ -410,6 +420,15 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _settings.Current.Ui.ReduceMotion = value;
             _settings.Save();
             _status.ReduceMotion = value;
+        }
+
+        partial void OnOfferUpdatesOnStartupChanged(bool value)
+        {
+            if (_suppressSave)
+                return;
+
+            var prefs = _updatePreferences.Load();
+            _updatePreferences.Save(UpdatePromptPolicy.WithOfferOnStartup(prefs, value));
         }
 
         partial void OnUtcVideoTimeChanged(bool value)

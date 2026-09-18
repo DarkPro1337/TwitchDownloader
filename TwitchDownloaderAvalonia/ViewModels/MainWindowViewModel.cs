@@ -1,8 +1,11 @@
+using TwitchDownloaderAvalonia.Update.Services;
+
 namespace TwitchDownloaderAvalonia.ViewModels
 {
     public partial class MainWindowViewModel : ViewModelBase
     {
         private readonly FfmpegService _ffmpeg;
+        private readonly UpdateLauncher _updateLauncher;
 
         public MainWindowViewModel(
             LocalizationService loc,
@@ -17,9 +20,12 @@ namespace TwitchDownloaderAvalonia.ViewModels
             ThumbnailService thumbnails,
             QueueService queue,
             UpdateCheckService updates,
-            QueueEnqueueService enqueue) : base(loc)
+            QueueEnqueueService enqueue,
+            UpdateLauncher updateLauncher,
+            UpdatePreferencesStore updatePreferences) : base(loc)
         {
             _ffmpeg = ffmpeg;
+            _updateLauncher = updateLauncher;
             Status = status;
 
             Vod = new VodDownloadViewModel(loc, settings, status, ffmpeg, dialogs, fileDialogs, collision, cacheCleaner, thumbnails, queue);
@@ -29,8 +35,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             ChatRender = new ChatRenderViewModel(loc, settings, status, ffmpeg, dialogs, fileDialogs, collision, thumbnails, queue);
             Search = new SearchViewModel(loc, settings, status, dialogs, thumbnails, OpenSearchResultAsync, enqueue);
             Queue = new QueueViewModel(loc, status, queue, dialogs, thumbnails, enqueue);
-            SettingsPage = new SettingsViewModel(loc, themes, settings, status, fileDialogs, dialogs, collision, queue);
-            About = new AboutViewModel(loc, updates, dialogs, ffmpeg);
+            SettingsPage = new SettingsViewModel(loc, themes, settings, status, fileDialogs, dialogs, collision, queue, updatePreferences);
+            About = new AboutViewModel(loc, updates, dialogs, ffmpeg, updateLauncher);
 
             CurrentPage = Vod;
             RefreshWindowTitle();
@@ -155,36 +161,40 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         public async Task InitializeAsync()
         {
-            if (!_ffmpeg.NeedsRefresh() && _ffmpeg.IsAvailable())
-                return;
+            if (_ffmpeg.NeedsRefresh() || !_ffmpeg.IsAvailable())
+            {
+                var previousTitle = WindowTitle;
+                var previousKind = Status.Kind;
+                var previousMessage = Status.Message;
+                var progress = new AvaloniaTaskProgress(
+                    Loc,
+                    LogLevel.Info | LogLevel.Error,
+                    percent => Status.Progress = percent,
+                    status =>
+                    {
+                        WindowTitle = $"{previousTitle} - {status}";
+                        Status.Set(AppStatusKind.Running, status);
+                    });
 
-            var previousTitle = WindowTitle;
-            var previousKind = Status.Kind;
-            var previousMessage = Status.Message;
-            var progress = new AvaloniaTaskProgress(
-                Loc,
-                LogLevel.Info | LogLevel.Error,
-                percent => Status.Progress = percent,
-                status =>
+                try
                 {
-                    WindowTitle = $"{previousTitle} - {status}";
-                    Status.Set(AppStatusKind.Running, status);
-                });
+                    await _ffmpeg.EnsureAvailableAsync(progress);
+                    Status.Set(previousKind, previousMessage, 0);
+                }
+                catch (Exception ex)
+                {
+                    WindowTitle = previousTitle;
+                    Status.Set(AppStatusKind.Error, Loc.Get("status.ffmpeg_download_failed"), 0);
+                    Vod.AppendLog(Loc.Get("status.ffmpeg_download_failed_log", ex.Message));
+                    return;
+                }
 
-            try
-            {
-                await _ffmpeg.EnsureAvailableAsync(progress);
-                Status.Set(previousKind, previousMessage, 0);
-            }
-            catch (Exception ex)
-            {
                 WindowTitle = previousTitle;
-                Status.Set(AppStatusKind.Error, Loc.Get("status.ffmpeg_download_failed"), 0);
-                Vod.AppendLog(Loc.Get("status.ffmpeg_download_failed_log", ex.Message));
-                return;
             }
 
-            WindowTitle = previousTitle;
+            await About.EnsureUpdateCheckAsync();
+            if (About.HasUpdate)
+                await _updateLauncher.LaunchAsync(About.RemoteVersion);
         }
     }
 }

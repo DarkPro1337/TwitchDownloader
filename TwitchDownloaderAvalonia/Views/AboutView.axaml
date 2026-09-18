@@ -39,6 +39,12 @@
                                     IsVisible="{Binding HasUpdate}"
                                     Command="{Binding OpenUrlCommand}"
                                     CommandParameter="{Binding ChangelogUrl}" />
+                                <Button
+                                    Classes="accent"
+                                    VerticalAlignment="Center"
+                                    Content="{loc:Translate Key=updater.title}"
+                                    IsVisible="{Binding ShowUpdateButton}"
+                                    Command="{Binding OpenUpdateCommand}" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
