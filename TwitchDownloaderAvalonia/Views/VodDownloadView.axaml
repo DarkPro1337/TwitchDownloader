@@ -7,6 +7,7 @@
     xmlns:c="using:TwitchDownloaderAvalonia.Converters"
     xmlns:loc="using:TwitchDownloaderAvalonia.Markup"
     xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
+    xmlns:views="using:TwitchDownloaderAvalonia.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -20,12 +21,13 @@
             <Button
                 DockPanel.Dock="Right"
                 Classes="accent"
-                Content="{loc:Translate Key=common.get_info}"
+                Content="{Binding GetInfoButtonText}"
                 Command="{Binding GetInfoCommand}"
                 IsEnabled="{Binding CanGetInfo}" />
             <TextBox
                 Margin="0,0,8,0"
                 PlaceholderText="{loc:Translate Key=vod.url_placeholder}"
+                IsEnabled="{Binding CanGetInfo}"
                 Text="{Binding VideoUrl}">
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding GetInfoCommand}" />
@@ -33,7 +35,8 @@
             </TextBox>
         </DockPanel>
 
-        <Grid Grid.Row="1" ColumnDefinitions="300,*">
+        <Grid Grid.Row="1">
+        <Grid ColumnDefinitions="300,*">
             <Border Classes="card" Margin="0,0,12,0">
                 <DockPanel>
                     <Viewbox
@@ -47,7 +50,7 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Spacing="6"
-                                    IsVisible="{Binding !InfoLoaded}">
+                                    IsVisible="{Binding ShowIdlePreview}">
                                     <Image
                                         Width="48"
                                         Height="48"
@@ -78,7 +81,7 @@
                             Classes="muted"
                             Text="{loc:Translate Key=common.get_info_hint}"
                             TextWrapping="Wrap"
-                            IsVisible="{Binding !InfoLoaded}" />
+                            IsVisible="{Binding ShowIdlePreview}" />
                         <StackPanel
                             Orientation="Horizontal"
                             Spacing="8"
@@ -294,6 +297,8 @@
                     </StackPanel>
                 </ScrollViewer>
             </Border>
+        </Grid>
+        <views:LoadingOverlay />
         </Grid>
 
         <Border Grid.Row="2" Classes="card" Margin="0,12,0,0" Padding="12,8">

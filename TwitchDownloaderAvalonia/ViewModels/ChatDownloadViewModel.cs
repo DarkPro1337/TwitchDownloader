@@ -1,6 +1,6 @@
 namespace TwitchDownloaderAvalonia.ViewModels
 {
-    public partial class ChatDownloadViewModel : ViewModelBase
+    public partial class ChatDownloadViewModel : ViewModelBase, IBusyPage
     {
         private readonly SettingsService _settings;
         private readonly IDialogService _dialogs;
@@ -153,7 +153,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (InfoLoaded)
                 InfoCreatedAt = _videoTime.ToString(CultureInfo.CurrentCulture);
 
-            Notify(nameof(LogToggleText), nameof(SuggestedFileDisplay));
+            Notify(nameof(LogToggleText), nameof(SuggestedFileDisplay), nameof(GetInfoButtonText));
         }
 
         [ObservableProperty]
@@ -176,10 +176,15 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial bool IsBusy { get; private set; }
 
         public bool CanGetInfo => !IsBusy;
-        public bool CanEditOptions => InfoLoaded;
+        public bool CanEditOptions => !IsBusy && InfoLoaded;
         public bool CanEditTrimStart => CanEditOptions && TrimStart;
         public bool CanEditTrimEnd => CanEditOptions && TrimEnd;
-        public bool CanDownload => InfoLoaded;
+        public bool CanDownload => !IsBusy && InfoLoaded;
+        public bool ShowIdlePreview => !IsBusy && !InfoLoaded;
+        public string GetInfoButtonText => IsBusy
+            ? Loc.Get("common.loading")
+            : Loc.Get("common.get_info");
+
         public bool CanCancelQueued => _queued?.CanCancel == true;
         public bool HasSuggestedFileName => !string.IsNullOrWhiteSpace(SuggestedFileName);
         public bool HasStreamerAvatar => StreamerAvatarBytes is { Length: > 0 };
@@ -514,6 +519,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             OnPropertyChanged(nameof(CanEditTrimStart));
             OnPropertyChanged(nameof(CanEditTrimEnd));
             OnPropertyChanged(nameof(CanDownload));
+            OnPropertyChanged(nameof(ShowIdlePreview));
+            OnPropertyChanged(nameof(GetInfoButtonText));
             OnPropertyChanged(nameof(CanEditThirdPartyEmotes));
             GetInfoCommand.NotifyCanExecuteChanged();
             DownloadCommand.NotifyCanExecuteChanged();

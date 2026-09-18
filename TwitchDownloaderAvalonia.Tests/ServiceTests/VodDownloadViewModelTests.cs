@@ -37,6 +37,9 @@ namespace TwitchDownloaderAvalonia.Tests.ServiceTests
             Assert.Single(dialogs.Errors);
             Assert.Equal(loc.Get("vod.invalid_title"), dialogs.Errors[0].Title);
             Assert.Equal(loc.Get("vod.invalid_message"), dialogs.Errors[0].Message);
+            Assert.False(vm.IsBusy);
+            Assert.True(vm.ShowIdlePreview);
+            Assert.Equal(loc.Get("common.get_info"), vm.GetInfoButtonText);
         }
     }
 }

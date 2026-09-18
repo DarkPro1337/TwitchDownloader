@@ -477,6 +477,13 @@
         <Setter Property="Height" Value="180" />
     </Style>
 
+    <Style Selector="Border.loadingScrim">
+        <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
+        <Setter Property="Opacity" Value="0.82" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+    </Style>
+
     <Style Selector="Border.swatch">
         <Setter Property="Width" Value="28" />
         <Setter Property="Height" Value="28" />

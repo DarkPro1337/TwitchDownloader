@@ -1,6 +1,6 @@
 namespace TwitchDownloaderAvalonia.ViewModels
 {
-    public partial class ClipDownloadViewModel : ViewModelBase
+    public partial class ClipDownloadViewModel : ViewModelBase, IBusyPage
     {
         private readonly SettingsService _settings;
         private readonly FfmpegService _ffmpeg;
@@ -100,7 +100,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (InfoLoaded)
                 InfoCreatedAt = _clipTime.ToString(CultureInfo.CurrentCulture);
 
-            Notify(nameof(LogToggleText), nameof(SuggestedFileDisplay));
+            Notify(nameof(LogToggleText), nameof(SuggestedFileDisplay), nameof(GetInfoButtonText));
             UpdateVideoSizeEstimates();
         }
 
@@ -124,8 +124,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public partial bool IsBusy { get; private set; }
 
         public bool CanGetInfo => !IsBusy;
-        public bool CanEditOptions => InfoLoaded;
-        public bool CanDownload => InfoLoaded && SelectedQuality is not null;
+        public bool CanEditOptions => !IsBusy && InfoLoaded;
+        public bool CanDownload => !IsBusy && InfoLoaded && SelectedQuality is not null;
+        public bool ShowIdlePreview => !IsBusy && !InfoLoaded;
+        public string GetInfoButtonText => IsBusy
+            ? Loc.Get("common.loading")
+            : Loc.Get("common.get_info");
+
         public bool CanCancelQueued => _queued?.CanCancel == true;
         public bool HasSuggestedFileName => !string.IsNullOrWhiteSpace(SuggestedFileName);
         public bool HasStreamerAvatar => StreamerAvatarBytes is { Length: > 0 };
@@ -294,9 +299,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
             OnPropertyChanged(nameof(CanGetInfo));
             OnPropertyChanged(nameof(CanEditOptions));
             OnPropertyChanged(nameof(CanDownload));
+            OnPropertyChanged(nameof(ShowIdlePreview));
+            OnPropertyChanged(nameof(GetInfoButtonText));
+
             GetInfoCommand.NotifyCanExecuteChanged();
             DownloadCommand.NotifyCanExecuteChanged();
             CancelCommand.NotifyCanExecuteChanged();
+
             OnPropertyChanged(nameof(CanCancelQueued));
         }
 
