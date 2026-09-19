@@ -52,9 +52,12 @@ namespace TwitchDownloaderAvalonia.ViewModels
             SelectedQualityOption = QualityOptions.FirstOrDefault(option => option.Value == SelectedQuality) ?? QualityOptions[0];
             _suppressQuality = false;
 
-            DownloadVideo = true;
-            DownloadChat = false;
-            RenderChat = false;
+            var queue = settings.Current.Queue;
+            DownloadVideo = queue.EnqueueDownloadVideo || !queue.EnqueueDownloadChat;
+            DownloadChat = queue.EnqueueDownloadChat;
+            DelayVideo = queue.EnqueueDelayVideo;
+            DelayChat = queue.EnqueueDelayChat;
+            RenderChat = queue is { EnqueueDownloadChat: true, EnqueueRenderChat: true };
 
             ChatFormat = settings.Current.Chat.DownloadFormat;
             ChatCompression = settings.Current.Chat.JsonCompression;
@@ -166,7 +169,13 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
             _settings.Current.Queue.Folder = Folder.Trim();
             _settings.Current.Queue.PreferredQuality = SelectedQuality;
+            _settings.Current.Queue.EnqueueDownloadVideo = DownloadVideo;
+            _settings.Current.Queue.EnqueueDownloadChat = DownloadChat;
+            _settings.Current.Queue.EnqueueRenderChat = RenderChat;
+            _settings.Current.Queue.EnqueueDelayVideo = DelayVideo;
+            _settings.Current.Queue.EnqueueDelayChat = DelayChat;
             _settings.Save();
+
             _close(new EnqueueOptions
             {
                 Folder = Folder.Trim(),

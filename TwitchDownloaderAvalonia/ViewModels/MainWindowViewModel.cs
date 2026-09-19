@@ -6,6 +6,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
     {
         private readonly FfmpegService _ffmpeg;
         private readonly UpdateLauncher _updateLauncher;
+        private readonly IDialogService _dialogs;
 
         public MainWindowViewModel(
             LocalizationService loc,
@@ -26,6 +27,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         {
             _ffmpeg = ffmpeg;
             _updateLauncher = updateLauncher;
+            _dialogs = dialogs;
             Status = status;
 
             Vod = new VodDownloadViewModel(loc, settings, status, ffmpeg, dialogs, fileDialogs, collision, cacheCleaner, thumbnails, queue);
@@ -69,6 +71,16 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public string AppName => Loc.Get("common.app_name");
 
         public string AppVersion => Loc.Get("about.version", typeof(MainWindowViewModel).Assembly.GetName().Version?.ToString(3) ?? "0.0.0");
+
+        public bool HasUnfinishedWork => Queue.Queue.HasUnfinishedWork;
+
+        public Task<bool> ConfirmCloseAsync()
+        {
+            if (!HasUnfinishedWork)
+                return Task.FromResult(true);
+
+            return _dialogs.ShowConfirmAsync(Loc.Get("dialogs.close_busy_title"), Loc.Get("dialogs.close_busy_message"));
+        }
 
         public string PageTitle => SelectedPage switch
         {

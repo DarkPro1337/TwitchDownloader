@@ -224,13 +224,15 @@
                     <TextBlock Classes="title" Text="{loc:Translate Key=settings.templates}" />
 
                     <Grid ColumnDefinitions="72,*" RowDefinitions="Auto,8,Auto,8,Auto">
-                        <TextBlock Classes="muted" Text="{loc:Translate Key=settings.template_vod}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="muted" Text="{loc:Translate Key=settings.template_vod}" VerticalAlignment="Center" />
                         <TextBox
+                            Grid.Row="0"
                             Grid.Column="1"
                             Text="{Binding TemplateVod}"
                             b:DragText.AcceptDrop="True" />
                         <TextBlock
                             Grid.Row="2"
+                            Grid.Column="0"
                             Classes="muted"
                             Text="{loc:Translate Key=settings.template_clip}"
                             VerticalAlignment="Center" />
@@ -241,6 +243,7 @@
                             b:DragText.AcceptDrop="True" />
                         <TextBlock
                             Grid.Row="4"
+                            Grid.Column="0"
                             Classes="muted"
                             Text="{loc:Translate Key=settings.template_chat}"
                             VerticalAlignment="Center" />
@@ -321,6 +324,8 @@
                         ItemsSource="{Binding QualityOptions}"
                         SelectedItem="{Binding SelectedQualityOption}" />
 
+                    <CheckBox Content="{loc:Translate Key=queue.auto_remove_finished}" IsChecked="{Binding Queue.AutoRemoveFinished}" />
+
                     <TextBlock Classes="label" Text="{loc:Translate Key=settings.parallel_limits}" Margin="0" />
                     <WrapPanel>
                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,0,16,8">
@@ -367,11 +372,20 @@
                 </StackPanel>
             </Border>
 
-            <Button
-                Classes="secondary"
-                HorizontalAlignment="Left"
-                Content="{loc:Translate Key=settings.restore_defaults}"
-                Command="{Binding RestoreDefaultsCommand}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button
+                    Classes="secondary"
+                    Content="{loc:Translate Key=settings.export}"
+                    Command="{Binding ExportSettingsCommand}" />
+                <Button
+                    Classes="secondary"
+                    Content="{loc:Translate Key=settings.import}"
+                    Command="{Binding ImportSettingsCommand}" />
+                <Button
+                    Classes="secondary"
+                    Content="{loc:Translate Key=settings.restore_defaults}"
+                    Command="{Binding RestoreDefaultsCommand}" />
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </ContentPage>

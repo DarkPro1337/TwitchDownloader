@@ -33,6 +33,12 @@ namespace TwitchDownloaderAvalonia.Abstractions
         Task CopyTextAsync(string text);
 
         /// <summary>
+        /// Reads text from the application clipboard when an owner window is available.
+        /// </summary>
+        /// <returns>Clipboard text, or <see langword="null"/> if empty or unavailable.</returns>
+        Task<string?> GetClipboardTextAsync();
+
+        /// <summary>
         /// Shows the mass-enqueue options dialog (folder, qualities, chat/render toggles).
         /// </summary>
         /// <param name="hasVods">Whether the selection includes VOD items (enables VOD-only options).</param>

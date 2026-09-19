@@ -31,6 +31,17 @@ namespace TwitchDownloaderAvalonia.Services
             await Dispatcher.UIThread.InvokeAsync(() => clipboard.SetTextAsync(text));
         }
 
+        public async Task<string?> GetClipboardTextAsync()
+        {
+            if (_owner?.Clipboard is not { } clipboard)
+                return null;
+
+            if (Dispatcher.UIThread.CheckAccess())
+                return await clipboard.TryGetTextAsync();
+
+            return await Dispatcher.UIThread.InvokeAsync(() => clipboard.TryGetTextAsync());
+        }
+
         public async Task ShowMessageAsync(string title, string message)
         {
             if (_owner is null)

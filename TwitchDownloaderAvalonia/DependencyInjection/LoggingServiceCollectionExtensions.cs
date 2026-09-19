@@ -24,6 +24,7 @@ namespace TwitchDownloaderAvalonia.DependencyInjection
 #else
                 builder.SetMinimumLevel(MsLogLevel.Information);
 #endif
+                builder.AddFilter("Microsoft.Extensions.Http", MsLogLevel.Warning);
                 builder.AddFilter("System.Net.Http.HttpClient", MsLogLevel.Warning);
                 builder.AddSimpleConsole(options =>
                 {

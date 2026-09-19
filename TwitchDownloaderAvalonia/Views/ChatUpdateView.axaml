@@ -5,6 +5,7 @@
     xmlns:core="using:TwitchDownloaderCore.Models"
     xmlns:c="using:TwitchDownloaderAvalonia.Converters"
     xmlns:loc="using:TwitchDownloaderAvalonia.Markup"
+    xmlns:controls="using:TwitchDownloaderAvalonia.Controls"
     xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -23,9 +24,15 @@
                 Command="{Binding BrowseCommand}"
                 IsEnabled="{Binding CanBrowse}" />
             <TextBox
+                Classes="urlField"
                 Margin="0,0,8,0"
+                VerticalAlignment="Center"
+                VerticalContentAlignment="Center"
                 PlaceholderText="{loc:Translate Key=update.file_placeholder}"
                 Text="{Binding InputFile}">
+                <TextBox.InnerRightContent>
+                    <controls:UrlBoxActions DataContext="{Binding UrlBox}" />
+                </TextBox.InnerRightContent>
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding LoadTypedFileCommand}" />
                 </TextBox.KeyBindings>

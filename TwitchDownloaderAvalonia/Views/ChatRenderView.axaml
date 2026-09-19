@@ -5,6 +5,7 @@
     xmlns:chat="using:TwitchDownloaderCore.Chat"
     xmlns:c="using:TwitchDownloaderAvalonia.Converters"
     xmlns:loc="using:TwitchDownloaderAvalonia.Markup"
+    xmlns:controls="using:TwitchDownloaderAvalonia.Controls"
     xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -23,9 +24,15 @@
                 Command="{Binding BrowseCommand}"
                 IsEnabled="{Binding CanBrowse}" />
             <TextBox
+                Classes="urlField"
                 Margin="0,0,8,0"
+                VerticalAlignment="Center"
+                VerticalContentAlignment="Center"
                 PlaceholderText="{loc:Translate Key=render.file_placeholder}"
                 Text="{Binding InputFile}">
+                <TextBox.InnerRightContent>
+                    <controls:UrlBoxActions DataContext="{Binding UrlBox}" />
+                </TextBox.InnerRightContent>
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding LoadTypedFileCommand}" />
                 </TextBox.KeyBindings>
@@ -229,6 +236,37 @@
                         <TabItem Header="{loc:Translate Key=render.tab_general}">
                             <ScrollViewer>
                                 <StackPanel Spacing="12" Margin="0,4,0,0">
+                                    <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="12">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="label" Text="{loc:Translate Key=render.preset}" VerticalAlignment="Center" Margin="0" />
+                                        <ComboBox
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Stretch"
+                                            ItemsSource="{Binding PresetNames}"
+                                            SelectedItem="{Binding SelectedPresetName}"
+                                            PlaceholderText="{loc:Translate Key=render.preset_placeholder}" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="label" Text="{loc:Translate Key=render.preset_name}" VerticalAlignment="Center" Margin="0" />
+                                        <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,8,Auto,8,Auto">
+                                            <TextBox
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                PlaceholderText="{loc:Translate Key=render.preset_placeholder}"
+                                                Text="{Binding PresetName}" />
+                                            <Button
+                                                Grid.Row="0"
+                                                Grid.Column="2"
+                                                Content="{loc:Translate Key=render.preset_save}"
+                                                Command="{Binding SavePresetCommand}" />
+                                            <Button
+                                                Grid.Row="0"
+                                                Grid.Column="4"
+                                                Classes="secondary"
+                                                Content="{loc:Translate Key=render.preset_delete}"
+                                                Command="{Binding DeletePresetCommand}" />
+                                        </Grid>
+                                    </Grid>
+
                                     <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="12">
                                         <TextBlock Classes="label" Text="{loc:Translate Key=render.width}" VerticalAlignment="Center" Margin="0" />
                                         <NumericUpDown

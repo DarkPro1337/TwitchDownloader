@@ -10,6 +10,7 @@ namespace TwitchDownloaderAvalonia.Tests.Fakes
         public List<(string Title, string Message)> Messages { get; } = [];
         public List<(string Title, string Message)> Confirms { get; } = [];
         public List<string> Copied { get; } = [];
+        public string? ClipboardText { get; set; }
 
         public bool ConfirmResult { get; init; }
 
@@ -37,6 +38,8 @@ namespace TwitchDownloaderAvalonia.Tests.Fakes
             return Task.CompletedTask;
         }
 
+        public Task<string?> GetClipboardTextAsync() => Task.FromResult(ClipboardText);
+
         public Task<EnqueueOptions?> ShowEnqueueOptionsAsync(bool hasVods, bool hasRecordingVods)
         {
             return Task.FromResult<EnqueueOptions?>(null);
@@ -54,14 +57,21 @@ namespace TwitchDownloaderAvalonia.Tests.Fakes
 
     internal sealed class FakeFileDialogService : IFileDialogService
     {
+        public string? SaveResult { get; set; }
+        public string? OpenResult { get; set; }
+        public List<(string SuggestedFileName, string FilterName, string Extension)> Saves { get; } = [];
+        public List<(string Title, string FilterName)> Opens { get; } = [];
+
         public Task<string?> SaveFileAsync(string suggestedFileName, string filterName, string extension)
         {
-            return Task.FromResult<string?>(null);
+            Saves.Add((suggestedFileName, filterName, extension));
+            return Task.FromResult(SaveResult);
         }
 
         public Task<string?> OpenFileAsync(string title, string filterName, IReadOnlyList<string> patterns)
         {
-            return Task.FromResult<string?>(null);
+            Opens.Add((title, filterName));
+            return Task.FromResult(OpenResult);
         }
 
         public Task<string?> PickFolderAsync(string title, string? startPath = null)

@@ -5,6 +5,7 @@
     xmlns:core="using:TwitchDownloaderCore.Models"
     xmlns:c="using:TwitchDownloaderAvalonia.Converters"
     xmlns:loc="using:TwitchDownloaderAvalonia.Markup"
+    xmlns:controls="using:TwitchDownloaderAvalonia.Controls"
     xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
     xmlns:views="using:TwitchDownloaderAvalonia.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -24,10 +25,16 @@
                 Command="{Binding GetInfoCommand}"
                 IsEnabled="{Binding CanGetInfo}" />
             <TextBox
+                Classes="urlField"
                 Margin="0,0,8,0"
+                VerticalAlignment="Center"
+                VerticalContentAlignment="Center"
                 PlaceholderText="{loc:Translate Key=chat.url_placeholder}"
                 IsEnabled="{Binding CanGetInfo}"
                 Text="{Binding SourceUrl}">
+                <TextBox.InnerRightContent>
+                    <controls:UrlBoxActions DataContext="{Binding UrlBox}" />
+                </TextBox.InnerRightContent>
                 <TextBox.KeyBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding GetInfoCommand}" />
                 </TextBox.KeyBindings>

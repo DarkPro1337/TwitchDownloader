@@ -45,12 +45,15 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _cacheCleaner = cacheCleaner;
             _thumbnails = thumbnails;
             _queue = queue;
+            UrlBox = new UrlBoxActionsViewModel(loc, dialogs, value => VideoUrl = value);
             _suppressSave = true;
             DownloadThreads = Math.Clamp(_settings.Current.Vod.DownloadThreads, 1, 20);
             TrimMode = _settings.Current.Vod.TrimMode;
             _suppressSave = false;
             Status = Loc.Get("status.idle");
         }
+
+        public UrlBoxActionsViewModel UrlBox { get; }
 
         public ObservableCollection<QualityOption> Qualities { get; } = [];
 

@@ -15,9 +15,9 @@ namespace TwitchDownloaderAvalonia.Models
     {
         public string OAuth { get; set; } = string.Empty;
         public string TempPath { get; set; } = string.Empty;
-        public string TemplateVod { get; set; } = "[{date_custom=\"M-d-yy\"}] {channel} - {title}";
-        public string TemplateClip { get; set; } = "[{date_custom=\"M-d-yy\"}] {channel} - {title}";
-        public string TemplateChat { get; set; } = "[{date_custom=\"M-d-yy\"}] {channel} - {title} - Chat";
+        public string TemplateVod { get; set; } = "{channel}/[{date_custom=\"M-d-yy\"}] - {title}";
+        public string TemplateClip { get; set; } = "{channel}/[{date_custom=\"M-d-yy\"}] - {title}";
+        public string TemplateChat { get; set; } = "{channel}/[{date_custom=\"M-d-yy\"}] - {title} - Chat";
         public bool DownloadThrottleEnabled { get; set; }
         public int MaximumBandwidthKib { get; set; } = 4096;
         public CollisionBehavior FileCollisionBehavior { get; set; } = CollisionBehavior.Prompt;
@@ -58,6 +58,20 @@ namespace TwitchDownloaderAvalonia.Models
         public int LimitClip { get; set; } = 10;
         public int LimitChat { get; set; } = 10;
         public int LimitRender { get; set; } = 2;
+        public bool AutoRemoveFinished { get; set; }
+        public bool EnqueueDownloadVideo { get; set; } = true;
+        public bool EnqueueDownloadChat { get; set; }
+        public bool EnqueueRenderChat { get; set; }
+        public bool EnqueueDelayVideo { get; set; }
+        public bool EnqueueDelayChat { get; set; }
         public List<string> RecentChannels { get; set; } = [];
+    }
+
+    public sealed class SearchSettings
+    {
+        public SearchKind Kind { get; set; } = SearchKind.Videos;
+        public string VideoType { get; set; } = string.Empty;
+        public string ClipPeriod { get; set; } = "LAST_MONTH";
+        public int PageSize { get; set; } = 30;
     }
 }

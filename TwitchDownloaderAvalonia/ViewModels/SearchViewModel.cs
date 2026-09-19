@@ -40,13 +40,17 @@ namespace TwitchDownloaderAvalonia.ViewModels
             ClipPeriods = CreateClipPeriods();
 
             _suppressSearch = true;
-            SelectedVideoType = VideoTypes[0];
-            SelectedClipPeriod = ClipPeriods[2];
-            SelectedPageSize = 30;
+            RestoreSearchFilters();
             RefreshChannelSuggestions();
             _suppressSearch = false;
 
+            _settings.SettingsReloaded += OnSettingsReloaded;
             Results.CollectionChanged += OnResultsChanged;
+        }
+
+        protected override void DisposeCore()
+        {
+            _settings.SettingsReloaded -= OnSettingsReloaded;
         }
 
         public AppStatus AppStatus { get; }
@@ -102,6 +106,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         public string AddToQueueText => SelectedCount > 1
             ? Loc.Get("search.add_n_to_queue", SelectedCount)
             : Loc.Get("search.add_to_queue");
+
         public bool CanSearch => !IsSearching;
         public bool CanNextPage => !IsSearching && _hasNextPage;
         public bool CanPreviousPage => !IsSearching && _cursorIndex > 0;
@@ -141,6 +146,33 @@ namespace TwitchDownloaderAvalonia.ViewModels
             Notify(nameof(AddToQueueText), nameof(SelectedCountText), nameof(EmptyText));
         }
 
+        private void OnSettingsReloaded(object? sender, EventArgs e)
+        {
+            _suppressSearch = true;
+            RestoreSearchFilters();
+            RefreshChannelSuggestions();
+            _suppressSearch = false;
+        }
+
+        private void RestoreSearchFilters()
+        {
+            var search = _settings.Current.Search;
+            Kind = search.Kind;
+            SelectedVideoType = VideoTypes.FirstOrDefault(option => option.Value == search.VideoType) ?? VideoTypes[0];
+            SelectedClipPeriod = ClipPeriods.FirstOrDefault(option => option.Value == search.ClipPeriod) ?? ClipPeriods[2];
+            SelectedPageSize = PageSizes.Contains(search.PageSize) ? search.PageSize : 30;
+        }
+
+        private void PersistSearchFilters()
+        {
+            var search = _settings.Current.Search;
+            search.Kind = Kind;
+            search.VideoType = SelectedVideoType?.Value ?? string.Empty;
+            search.ClipPeriod = SelectedClipPeriod?.Value ?? "LAST_MONTH";
+            search.PageSize = SelectedPageSize;
+            _settings.Save();
+        }
+
         private IReadOnlyList<SearchFilterOption> CreateVideoTypes() =>
         [
             new(Loc, "search.video_all", ""),
@@ -164,6 +196,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSearch)
                 return;
 
+            PersistSearchFilters();
             _selected.Clear();
             NotifySelection();
             RestartSearch();
@@ -189,7 +222,11 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         partial void OnSelectedVideoTypeChanged(SearchFilterOption? value)
         {
-            if (_suppressSearch || Kind != SearchKind.Videos)
+            if (_suppressSearch)
+                return;
+
+            PersistSearchFilters();
+            if (Kind != SearchKind.Videos)
                 return;
 
             OnSearchFilterChanged(value);
@@ -197,7 +234,11 @@ namespace TwitchDownloaderAvalonia.ViewModels
 
         partial void OnSelectedClipPeriodChanged(SearchFilterOption? value)
         {
-            if (_suppressSearch || Kind != SearchKind.Clips)
+            if (_suppressSearch)
+                return;
+
+            PersistSearchFilters();
+            if (Kind != SearchKind.Clips)
                 return;
 
             OnSearchFilterChanged(value);
@@ -210,6 +251,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             if (_suppressSearch || value <= 0)
                 return;
 
+            PersistSearchFilters();
             ResetPagination();
             _ = UpdateListAsync();
         }

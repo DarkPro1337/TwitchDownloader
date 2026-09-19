@@ -3,9 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:anim="https://github.com/whistyun/AnimatedImage.Avalonia"
     xmlns:loc="using:TwitchDownloaderAvalonia.Markup"
-    xmlns:vm="using:TwitchDownloaderAvalonia.ViewModels"
+    xmlns:a="using:TwitchDownloaderAvalonia.Abstractions"
     x:Class="TwitchDownloaderAvalonia.Views.LoadingOverlay"
-    x:DataType="vm:IBusyPage"
+    x:DataType="a:IBusyPage"
     IsVisible="{Binding IsBusy}"
     IsHitTestVisible="True">
 

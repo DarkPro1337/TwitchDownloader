@@ -111,12 +111,31 @@ namespace TwitchDownloaderAvalonia.Services
 
         public LogLevel LogLevel => (LogLevel)_settings.Current.Ui.LogLevels;
 
+        public bool AutoRemoveFinished
+        {
+            get => _settings.Current.Queue.AutoRemoveFinished;
+            set
+            {
+                if (_settings.Current.Queue.AutoRemoveFinished == value)
+                    return;
+
+                _settings.Current.Queue.AutoRemoveFinished = value;
+                _settings.Save();
+                OnPropertyChanged();
+
+                if (value)
+                    RemoveFinishedItems();
+            }
+        }
+
         public void NotifyLimitsChanged()
         {
             OnPropertyChanged(nameof(LimitVod));
             OnPropertyChanged(nameof(LimitClip));
             OnPropertyChanged(nameof(LimitChat));
             OnPropertyChanged(nameof(LimitRender));
+            OnPropertyChanged(nameof(AutoRemoveFinished));
+
             RequestPump();
         }
 
@@ -160,6 +179,7 @@ namespace TwitchDownloaderAvalonia.Services
             item.AttachHost(this, _dialogs, _status);
             item.PropertyChanged += OnItemPropertyChanged;
             Items.Add(item);
+
             RequestPump();
             RefreshDerived();
             RefreshAppStatus();
@@ -235,11 +255,18 @@ namespace TwitchDownloaderAvalonia.Services
 
         public void ClearFinished()
         {
-            var finished = Items
-                .Where(item => item.Status is QueueItemStatus.Finished or QueueItemStatus.Failed or QueueItemStatus.Canceled)
-                .ToArray();
+            RemoveItems(item => item.Status is QueueItemStatus.Finished or QueueItemStatus.Failed or QueueItemStatus.Canceled);
+        }
 
-            foreach (var item in finished)
+        private void RemoveFinishedItems()
+        {
+            RemoveItems(item => item.Status == QueueItemStatus.Finished);
+        }
+
+        private void RemoveItems(Func<QueueItemViewModel, bool> predicate)
+        {
+            var matches = Items.Where(predicate).ToArray();
+            foreach (var item in matches)
             {
                 Detach(item);
                 Items.Remove(item);
@@ -269,6 +296,15 @@ namespace TwitchDownloaderAvalonia.Services
 
             if (e.PropertyName is nameof(QueueItemViewModel.Status) or nameof(QueueItemViewModel.DisplayStatus) or nameof(QueueItemViewModel.Progress))
                 RefreshAppStatus();
+
+            if (e.PropertyName == nameof(QueueItemViewModel.Status) && AutoRemoveFinished && sender is QueueItemViewModel { Status: QueueItemStatus.Finished } item)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (AutoRemoveFinished && Items.Contains(item) && item.Status == QueueItemStatus.Finished)
+                        Remove(item);
+                });
+            }
         }
 
         private void RequestPump()

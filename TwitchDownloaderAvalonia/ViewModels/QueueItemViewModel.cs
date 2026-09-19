@@ -331,17 +331,22 @@ namespace TwitchDownloaderAvalonia.ViewModels
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    var args = File.Exists(path) ? $"/select,\"{path}\"" : $"\"{directory}\"";
+                    var fileExists = File.Exists(path);
+                    var args = FolderReveal.CanSelectFile(path, fileExists, isWindows: true)
+                        ? $"/select,\"{path}\""
+                        : $"\"{directory}\"";
+
                     Process.Start(new ProcessStartInfo("explorer.exe", args) { UseShellExecute = true });
                     return;
                 }
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    if (File.Exists(path))
+                    if (FolderReveal.CanSelectFile(path, File.Exists(path), isWindows: false))
                         Process.Start("open", ["-R", path]);
                     else
                         Process.Start("open", [directory]);
+
                     return;
                 }
 

@@ -47,6 +47,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _collision = collision;
             _thumbnails = thumbnails;
             _queue = queue;
+            UrlBox = new UrlBoxActionsViewModel(loc, dialogs, value => InputFile = value);
             _suppressSave = true;
 
             OutputFormat = _settings.Current.Chat.DownloadFormat;
@@ -64,6 +65,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _suppressSave = false;
             Status = Loc.Get("status.idle");
         }
+
+        public UrlBoxActionsViewModel UrlBox { get; }
 
         [ObservableProperty]
         public partial string InputFile { get; set; } = string.Empty;

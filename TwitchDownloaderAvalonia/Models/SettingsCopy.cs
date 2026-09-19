@@ -14,6 +14,8 @@ namespace TwitchDownloaderAvalonia.Models
                 var value = prop.GetValue(source);
                 if (value is List<string> list)
                     value = new List<string>(list);
+                else if (value is List<NamedRenderPreset> presets)
+                    value = presets.Select(preset => preset.Clone()).ToList();
 
                 prop.SetValue(dest, value);
             }

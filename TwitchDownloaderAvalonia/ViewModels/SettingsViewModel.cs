@@ -317,6 +317,47 @@ namespace TwitchDownloaderAvalonia.ViewModels
         }
 
         [RelayCommand]
+        private async Task ExportSettingsAsync()
+        {
+            var path = await _files.SaveFileAsync(
+                "twitchdownloader-settings.json",
+                Loc.Get("settings.export_filter"),
+                "json");
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            try
+            {
+                _settings.ExportTo(path);
+            }
+            catch (Exception ex)
+            {
+                await _dialogs.ShowErrorAsync(Loc.Get("settings.export"), ex.Message);
+            }
+        }
+
+        [RelayCommand]
+        private async Task ImportSettingsAsync()
+        {
+            var path = await _files.OpenFileAsync(Loc.Get("settings.import"), Loc.Get("settings.export_filter"), ["*.json"]);
+            if (string.IsNullOrWhiteSpace(path))
+                return;
+
+            if (!_settings.TryImportFrom(path))
+            {
+                await _dialogs.ShowErrorAsync(Loc.Get("settings.import_failed"), Loc.Get("settings.import_failed_message"));
+                return;
+            }
+
+            _collision.ResetSessionBehavior();
+            LoadFromSettings();
+            Loc.SetCulture(SelectedCulture.Code);
+            _themes.Apply(_settings.Current);
+            _status.ReduceMotion = ReduceMotion;
+            Queue.NotifyLimitsChanged();
+        }
+
+        [RelayCommand]
         private async Task RestoreDefaultsAsync()
         {
             var confirmed = await _dialogs.ShowConfirmAsync(

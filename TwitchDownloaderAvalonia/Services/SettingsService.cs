@@ -32,15 +32,34 @@ namespace TwitchDownloaderAvalonia.Services
         public AppSettings Current { get; }
 
         public event EventHandler? DefaultsRestored;
+        public event EventHandler? SettingsReloaded;
 
-        public void Save()
+        public string FilePath => _filePath;
+
+        public void Save() => WriteJson(Current, _filePath);
+
+        public void ExportTo(string path) => WriteJson(Current, path);
+
+        public bool TryImportFrom(string path)
         {
-            lock (_saveLock)
+            try
             {
-                var json = JsonSerializer.Serialize(Current, JsonOptions);
-                var tempPath = _filePath + ".tmp";
-                File.WriteAllText(tempPath, json);
-                File.Move(tempPath, _filePath, overwrite: true);
+                if (!File.Exists(path))
+                    return false;
+
+                var json = File.ReadAllText(path);
+                var imported = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
+                if (imported is null)
+                    return false;
+
+                Current.CopyFrom(imported);
+                Save();
+                SettingsReloaded?.Invoke(this, EventArgs.Empty);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -49,6 +68,22 @@ namespace TwitchDownloaderAvalonia.Services
             Current.CopyFrom(new AppSettings());
             Save();
             DefaultsRestored?.Invoke(this, EventArgs.Empty);
+            SettingsReloaded?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void WriteJson(AppSettings settings, string path)
+        {
+            var json = JsonSerializer.Serialize(settings, JsonOptions);
+            var directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+
+            lock (_saveLock)
+            {
+                var tempPath = path + ".tmp";
+                File.WriteAllText(tempPath, json);
+                File.Move(tempPath, path, overwrite: true);
+            }
         }
 
         private AppSettings Load()

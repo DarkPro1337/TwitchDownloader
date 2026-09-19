@@ -44,11 +44,14 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _collision = collision;
             _thumbnails = thumbnails;
             _queue = queue;
+            UrlBox = new UrlBoxActionsViewModel(loc, dialogs, value => ClipUrl = value);
             _suppressSave = true;
             EncodeMetadata = _settings.Current.Clip.EncodeMetadata;
             _suppressSave = false;
             Status = Loc.Get("status.idle");
         }
+
+        public UrlBoxActionsViewModel UrlBox { get; }
 
         public ObservableCollection<ClipQualityOption> Qualities { get; } = [];
 

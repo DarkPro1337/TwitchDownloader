@@ -42,6 +42,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _collision = collision;
             _thumbnails = thumbnails;
             _queue = queue;
+            UrlBox = new UrlBoxActionsViewModel(loc, dialogs, value => SourceUrl = value);
             _suppressSave = true;
             DownloadFormat = _settings.Current.Chat.DownloadFormat;
             Compression = _settings.Current.Chat.JsonCompression;
@@ -54,6 +55,8 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _suppressSave = false;
             Status = Loc.Get("status.idle");
         }
+
+        public UrlBoxActionsViewModel UrlBox { get; }
 
         [ObservableProperty]
         public partial string SourceUrl { get; set; } = string.Empty;

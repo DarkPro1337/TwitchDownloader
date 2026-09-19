@@ -69,6 +69,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private readonly QueueService _queue;
 
         private bool _loading;
+        private bool _suppressPreset;
 
         private QueueItemViewModel? _queued;
         private ChatRoot? _chatJson;
@@ -107,7 +108,9 @@ namespace TwitchDownloaderAvalonia.ViewModels
             _collision = collision;
             _thumbnails = thumbnails;
             _queue = queue;
-            _settings.DefaultsRestored += OnDefaultsRestored;
+            UrlBox = new UrlBoxActionsViewModel(loc, dialogs, value => InputFile = value);
+
+            _settings.SettingsReloaded += OnSettingsReloaded;
 
             foreach (var font in LoadFonts())
                 Fonts.Add(font);
@@ -120,6 +123,7 @@ namespace TwitchDownloaderAvalonia.ViewModels
             {
                 LoadFromSettings();
                 LoadFfmpegArgs();
+                RefreshPresets();
             }
             finally
             {
@@ -129,9 +133,28 @@ namespace TwitchDownloaderAvalonia.ViewModels
             Status = Loc.Get("status.idle");
         }
 
+        protected override void DisposeCore()
+        {
+            _settings.SettingsReloaded -= OnSettingsReloaded;
+        }
+
+        public UrlBoxActionsViewModel UrlBox { get; }
+
         public ObservableCollection<string> Fonts { get; } = [];
         public ObservableCollection<RenderContainer> Containers { get; } = [];
         public ObservableCollection<RenderCodec> Codecs { get; } = [];
+        public ObservableCollection<string> PresetNames { get; } = [];
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeletePresetCommand))]
+        public partial string? SelectedPresetName { get; set; }
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SavePresetCommand))]
+        public partial string PresetName { get; set; } = string.Empty;
+
+        public bool CanSavePreset => !string.IsNullOrWhiteSpace(PresetName);
+        public bool CanDeletePreset => !string.IsNullOrWhiteSpace(SelectedPresetName);
 
         [ObservableProperty]
         public partial string InputFile { get; set; } = string.Empty;
@@ -464,6 +487,58 @@ namespace TwitchDownloaderAvalonia.ViewModels
         private void ToggleLog()
         {
             IsLogExpanded = !IsLogExpanded;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanSavePreset))]
+        private async Task SavePresetAsync()
+        {
+            var name = PresetName.Trim();
+            if (name.Length == 0)
+                return;
+
+            PersistSettings();
+            SaveFfmpegArgs();
+
+            var presets = _settings.Current.RenderPresets;
+            var existing = presets.FirstOrDefault(preset => preset.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (existing is not null)
+            {
+                var overwrite = await _dialogs.ShowConfirmAsync(Loc.Get("render.preset_save"), Loc.Get("render.preset_exists"));
+                if (!overwrite)
+                    return;
+
+                existing.Name = name;
+                existing.Settings = SettingsCopy.Clone(_settings.Current.Render);
+            }
+            else
+            {
+                presets.Add(new NamedRenderPreset
+                {
+                    Name = name,
+                    Settings = SettingsCopy.Clone(_settings.Current.Render),
+                });
+            }
+
+            _settings.Save();
+            RefreshPresets();
+
+            _suppressPreset = true;
+            SelectedPresetName = name;
+            PresetName = name;
+            _suppressPreset = false;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanDeletePreset))]
+        private void DeletePreset()
+        {
+            var name = SelectedPresetName;
+            if (string.IsNullOrWhiteSpace(name))
+                return;
+
+            _settings.Current.RenderPresets.RemoveAll(preset => preset.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            _settings.Save();
+            PresetName = string.Empty;
+            RefreshPresets();
         }
 
         [RelayCommand]
@@ -821,18 +896,58 @@ namespace TwitchDownloaderAvalonia.ViewModels
             }, _ffmpeg.ResolvedPath, file => _collision.HandleCollision(file)!);
         }
 
-        private void OnDefaultsRestored(object? sender, EventArgs e)
+        private void OnSettingsReloaded(object? sender, EventArgs e)
         {
             _loading = true;
             try
             {
                 LoadFromSettings();
                 LoadFfmpegArgs();
+                RefreshPresets();
             }
             finally
             {
                 _loading = false;
             }
+        }
+
+        private void RefreshPresets()
+        {
+            var selected = SelectedPresetName;
+            _suppressPreset = true;
+            PresetNames.Clear();
+
+            foreach (var preset in _settings.Current.RenderPresets.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase))
+                PresetNames.Add(preset.Name);
+
+            SelectedPresetName = selected is not null && PresetNames.Contains(selected) ? selected : null;
+            _suppressPreset = false;
+            DeletePresetCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnSelectedPresetNameChanged(string? value)
+        {
+            if (_suppressPreset || string.IsNullOrWhiteSpace(value))
+                return;
+
+            var preset = _settings.Current.RenderPresets.FirstOrDefault(item => item.Name == value);
+            if (preset is null)
+                return;
+
+            _loading = true;
+            try
+            {
+                _settings.Current.Render = SettingsCopy.Clone(preset.Settings);
+                LoadFromSettings();
+                LoadFfmpegArgs();
+                PresetName = preset.Name;
+            }
+            finally
+            {
+                _loading = false;
+            }
+
+            PersistSettings();
         }
 
         private void LoadFromSettings()

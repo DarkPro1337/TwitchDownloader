@@ -23,6 +23,7 @@
                 <Button
                     Content="{loc:Translate Key=queue.clear_finished}"
                     Command="{Binding ClearFinishedCommand}"
+                    IsVisible="{Binding Queue.AutoRemoveFinished, Converter={x:Static c:InverseBoolConverter.Instance}}"
                     IsEnabled="{Binding Queue.HasFinishedItems}" />
                 <Button
                     Classes="secondary"
